@@ -250,6 +250,7 @@ async def chat(request: ChatRequest):
                             }
                         ],
                         temperature=0.1,
+                        timeout=25
                     )
                     extracted_text = vision_completion.choices[0].message.content.strip()
                     if extracted_text:
