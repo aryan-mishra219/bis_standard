@@ -7,6 +7,15 @@ create table if not exists bis_standards (
   embedding vector(384)
 );
 
+-- Enable Row Level Security & set public policies for read & insert
+alter table bis_standards enable row level security;
+
+create policy "Allow public read" on bis_standards
+  for select using (true);
+
+create policy "Allow public insert" on bis_standards
+  for insert with check (true);
+
 create or replace function match_documents (
   query_embedding vector(384),
   match_count int default 5
