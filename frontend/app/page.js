@@ -6,6 +6,13 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Phase 5 Hackathon "Wow" Features States
+  const [language, setLanguage] = useState("English");
+  const [simplify, setSimplify] = useState(false);
+  const [showFeeEstimator, setShowFeeEstimator] = useState(false);
+  const [enterpriseType, setEnterpriseType] = useState("Large");
+
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -29,7 +36,7 @@ export default function ChatInterface() {
       const res = await fetch("http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, language, simplify }),
       });
       
       const data = await res.json();
@@ -52,16 +59,116 @@ export default function ChatInterface() {
     "What are the rules for Gold Hallmarking in India?"
   ];
 
+  // Fee calculation logic
+  const baseFee = 100000;
+  let discountPercent = 0;
+  if (enterpriseType === "Small") discountPercent = 50;
+  else if (enterpriseType === "Micro/Startup") discountPercent = 80;
+
+  const finalFee = baseFee * (1 - discountPercent / 100);
+  const savings = baseFee - finalFee;
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 font-sans text-gray-800">
       {/* Header */}
-      <header className="bg-[#0055A4] text-white p-4 shadow-md flex items-center gap-3">
-        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-[#0055A4]">BIS</div>
-        <div>
-          <h1 className="text-xl font-bold">BIS Intelligent Assistant</h1>
-          <p className="text-xs text-blue-200">Official Standards & Certification Guide</p>
+      <header className="bg-[#0055A4] text-white p-4 shadow-md flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-[#0055A4] shadow">BIS</div>
+          <div>
+            <h1 className="text-xl font-bold">BIS Intelligent Assistant</h1>
+            <p className="text-xs text-blue-200">Official Standards & Certification Guide</p>
+          </div>
+        </div>
+
+        {/* Control Panel */}
+        <div className="flex items-center flex-wrap gap-3">
+          {/* ELI5 Toggle */}
+          <label className="flex items-center gap-2 text-xs bg-blue-900/60 hover:bg-blue-900 px-3 py-1.5 rounded-lg cursor-pointer border border-blue-400/30 transition">
+            <input 
+              type="checkbox" 
+              checked={simplify} 
+              onChange={(e) => setSimplify(e.target.checked)}
+              className="accent-[#0055A4] w-4 h-4 cursor-pointer"
+            />
+            <span className="font-medium">ELI5 (Simplify)</span>
+          </label>
+
+          {/* Language Selector */}
+          <div className="flex items-center gap-1.5 text-xs bg-blue-900/60 px-2 py-1 rounded-lg border border-blue-400/30">
+            <span className="text-blue-200 font-medium">🌐</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="bg-transparent text-white font-medium focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="English" className="text-gray-800">English</option>
+              <option value="Hindi" className="text-gray-800">Hindi (हिंदी)</option>
+              <option value="Tamil" className="text-gray-800">Tamil (தமிழ்)</option>
+              <option value="Bengali" className="text-gray-800">Bengali (বাংলা)</option>
+            </select>
+          </div>
+
+          {/* Fee Estimator Toggle Button */}
+          <button
+            onClick={() => setShowFeeEstimator(!showFeeEstimator)}
+            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm border ${
+              showFeeEstimator 
+                ? "bg-amber-400 text-blue-950 border-amber-300 font-bold" 
+                : "bg-blue-800/80 hover:bg-blue-800 text-white border-blue-400/30"
+            }`}
+          >
+            💰 Fee Estimator {showFeeEstimator ? "▲" : "▼"}
+          </button>
         </div>
       </header>
+
+      {/* Fee Estimator Banner */}
+      {showFeeEstimator && (
+        <div className="bg-amber-50 border-b border-amber-200 p-4 shadow-inner transition-all">
+          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-amber-900 flex items-center gap-1.5">
+                <span>🏷️</span> BIS Certification Fee Estimator (MSME Concessions)
+              </h3>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Calculate official marking fees according to your enterprise scale.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-amber-900">Enterprise Scale:</label>
+                <select
+                  value={enterpriseType}
+                  onChange={(e) => setEnterpriseType(e.target.value)}
+                  className="text-xs bg-white border border-amber-300 text-amber-900 rounded-md p-1.5 font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer shadow-sm"
+                >
+                  <option value="Large">Large Enterprise</option>
+                  <option value="Small">Small Enterprise (50% Off)</option>
+                  <option value="Micro/Startup">Micro / Startup (80% Off)</option>
+                </select>
+              </div>
+
+              <div className="bg-white border border-amber-300 rounded-lg px-4 py-2 text-right shadow-sm">
+                <div className="text-[10px] text-gray-500 uppercase font-semibold">Estimated Marking Fee</div>
+                <div className="text-base font-bold text-emerald-700">
+                  ₹{finalFee.toLocaleString("en-IN")}
+                  {discountPercent > 0 && (
+                    <span className="text-xs text-gray-400 line-through ml-2 font-normal">
+                      ₹{baseFee.toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </div>
+                {savings > 0 && (
+                  <div className="text-[10px] font-bold text-emerald-600">
+                    🎉 You Save ₹{savings.toLocaleString("en-IN")} ({discountPercent}% Concession)
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chat Area */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">

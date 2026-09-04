@@ -58,9 +58,18 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 | Method | Endpoint | Description | Expected Payload / Output |
 | --- | --- | --- | --- |
 | `GET` | `/health` | Backend Health Check | `{"status": "BIS Backend is running natively"}` |
-| `POST` | `/api/chat` | RAG Query with Citation Sources | Payload: `{"query": "string"}` -> Output: `{"answer": "string", "sources": [...]}` |
+| `POST` | `/api/chat` | Multilingual & ELI5 RAG Query | Payload: `{"query": "string", "language": "English|Hindi|Tamil|Bengali", "simplify": bool}` -> Output: `{"answer": "string", "sources": [...]}` |
 
 ---
+
+## ⭐ Phase 5 "Wow" Features
+
+- **🧒 ELI5 (Explain Like I'm 5)**: Toggle simplification mode to receive answers in plain, easy-to-understand language.
+- **🌐 Multilingual Support**: Query & receive responses strictly in English, Hindi (हिंदी), Tamil (தமிழ்), or Bengali (বাংলা).
+- **💰 BIS Fee Estimator**: Interactive calculator providing real-time marking fee estimates with 50% concession for Small Enterprises and 80% for Micro/Startups.
+
+---
+
 
 
 ## 🚀 Getting Started

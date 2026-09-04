@@ -45,6 +45,8 @@ supabase: Client = init_supabase()
 
 class ChatRequest(BaseModel):
     query: str
+    language: str = "English"
+    simplify: bool = False
 
 class ChatResponse(BaseModel):
     answer: str
@@ -100,8 +102,16 @@ async def chat(request: ChatRequest):
             "Your job is to provide accurate, context-aware information to MSMEs, startups, and consumers. "
             "You MUST base your answer ONLY on the provided context. "
             "If the context does not contain the answer, politely state that you do not have the information. "
-            "When answering, you MUST cite the specific Indian Standard and Page number from the context at the end of your claims (e.g., [IS 10500, Page 5])."
+            "When answering, you MUST cite the specific Indian Standard and Page number from the context at the end of your claims (e.g., [IS 10500, Page 5]). "
         )
+
+        if request.simplify:
+            system_prompt += "EXPLAIN IN EXTREMELY SIMPLE, PLAIN LANGUAGE SUITABLE FOR A 5TH GRADER (ELI5 style). Use simple analogies and easy words. "
+        else:
+            system_prompt += "Maintain professional, clear, and technically accurate language. "
+
+        system_prompt += f"You MUST write your entire response strictly in the following language: {request.language}."
+
         
         messages = [
             {"role": "system", "content": system_prompt},
