@@ -62,9 +62,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ---
 
-## ⭐ Phase 5 & 6 Hackathon "Wow" Features
+## ⭐ Phase 5, 6 & 7 Hackathon "Wow" Features
 
-- **📷 Multimodal Vision & OCR**: Upload product label images or hallmarks (📎). Groq Vision OCR (`llama-3.2-11b-vision-preview`) extracts IS standard codes, HUIDs, and product names automatically for semantic search.
+- **🤖 Autonomous Agentic Tool / Function Calling (Phase 7)**:
+  - **`search_testing_labs`**: Automatically detects when users ask to locate or list testing labs (e.g. "Find me a water testing lab in Delhi") and queries the laboratory database.
+  - **`verify_hallmark`**: Automatically detects HUID codes (e.g. "Check hallmark ID AB1234") and verifies jewelry purity, jeweler reference, and hallmarking center details.
+  - **⚙️ Action Badges (UI Feedback)**: Displays distinctive Amber Action Badges (`Action: Queried BIS Testing Lab Database for 'Delhi'`) above assistant bubbles to show autonomous backend tool invocations.
+- **📷 Multimodal Vision & OCR**: Upload product label images or hallmarks (📎). Groq Vision OCR (`qwen/qwen3.8-27b`) extracts IS standard codes, HUIDs, and product names automatically for semantic search.
 - **🧒 ELI5 (Explain Like I'm 5)**: Toggle simplification mode to receive answers in plain, easy-to-understand language.
 - **🌐 Multilingual Support**: Query & receive responses strictly in English, Hindi (हिंदी), Tamil (தமிழ்), or Bengali (বাংলা).
 - **💰 BIS Fee Estimator**: Interactive calculator providing real-time marking fee estimates with 50% concession for Small Enterprises and 80% for Micro/Startups.
