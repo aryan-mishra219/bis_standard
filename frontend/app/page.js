@@ -146,9 +146,9 @@ export default function ChatInterface() {
   return (
     <div className="flex flex-col h-screen max-w-full bg-gray-50 font-sans text-gray-800 overflow-x-hidden">
       {/* Header */}
-      <header className="bg-[#0055A4] text-white p-3 sm:p-4 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 flex-shrink-0">
+      <header className="bg-[#0055A4] text-white p-3 sm:p-4 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center font-bold text-[#0055A4] text-xs sm:text-base shadow flex-shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center font-bold text-[#0055A4] text-xs sm:text-base shadow shrink-0">
             BIS
           </div>
           <div>
@@ -201,7 +201,7 @@ export default function ChatInterface() {
 
       {/* Fee Estimator Banner */}
       {showFeeEstimator && (
-        <div className="bg-amber-50 border-b border-amber-200 p-3 sm:p-4 shadow-inner transition-all flex-shrink-0">
+        <div className="bg-amber-50 border-b border-amber-200 p-3 sm:p-4 shadow-inner transition-all shrink-0">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-amber-900 flex items-center gap-1.5">
@@ -279,7 +279,7 @@ export default function ChatInterface() {
                     />
                   )}
                   {msg.role === "assistant" ? (
-                    <div className="prose prose-sm max-w-none text-gray-700 break-words [overflow-wrap:anywhere]">
+                    <div className="prose prose-sm max-w-none text-gray-700 break-words">
                       {/* Phase 7 Agentic Action Pills */}
                       {msg.actions_taken && msg.actions_taken.length > 0 && (
                         <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
@@ -395,7 +395,7 @@ export default function ChatInterface() {
                               <div className="space-y-1.5">
                                 {msg.compliance_report.compliance_gaps.map((gap, i) => (
                                   <div key={i} className="flex items-start gap-1.5 text-[11px] sm:text-xs text-blue-50 bg-black/20 p-2 rounded border border-white/5">
-                                    <span className="text-amber-400 font-bold flex-shrink-0">⚠️</span>
+                                    <span className="text-amber-400 font-bold shrink-0">⚠️</span>
                                     <span>{gap}</span>
                                   </div>
                                 ))}
@@ -455,7 +455,7 @@ export default function ChatInterface() {
       </main>
 
       {/* Input Area */}
-      <footer className="bg-white border-t border-gray-200 p-2.5 sm:p-4 flex-shrink-0">
+      <footer className="bg-white border-t border-gray-200 p-2.5 sm:p-4 shrink-0">
         <div className="max-w-4xl mx-auto space-y-2 sm:space-y-3">
           {/* Image Preview Thumbnail */}
           {imagePreview && (
@@ -489,7 +489,7 @@ export default function ChatInterface() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="p-2.5 sm:p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-300 transition text-base sm:text-lg flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+              className="p-2.5 sm:p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-300 transition text-base sm:text-lg flex items-center justify-center disabled:opacity-50 shrink-0"
               title="Attach Product Spec Sheet, Label, or Hallmark Image"
             >
               📎
@@ -507,7 +507,7 @@ export default function ChatInterface() {
             <button 
               onClick={() => handleSend()}
               disabled={isLoading || (!input.trim() && !imagePreview)}
-              className="bg-[#0055A4] hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition disabled:opacity-50 flex-shrink-0"
+              className="bg-[#0055A4] hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition disabled:opacity-50 shrink-0"
             >
               Send
             </button>
