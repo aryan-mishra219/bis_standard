@@ -17,6 +17,8 @@ An intelligent assistant application built for Indian Standards (BIS) compliance
 bis_standard/
 ├── backend/
 │   ├── .env                # Backend environment configuration
+│   ├── init_db.sql         # Supabase vector DB migration script
+│   ├── ingest.py           # Document extraction, chunking & FastEmbed pipeline
 │   ├── main.py             # FastAPI entrypoint with CORS & health endpoint
 │   └── requirements.txt    # Python dependencies
 └── frontend/
@@ -29,6 +31,7 @@ bis_standard/
     ├── next.config.mjs     # Next.js configuration
     └── package.json        # Frontend dependencies & scripts
 ```
+
 
 ---
 
@@ -90,8 +93,19 @@ uvicorn main:app --reload --port 8000
 - Health check URL: `http://localhost:8000/health`
 - Interactive API Docs (Swagger): `http://localhost:8000/docs`
 
+#### Ingesting BIS Standard PDFs
+To extract, chunk, generate 384-dim embeddings (`fastembed`), and store vectors (in Supabase or local offline storage):
+
+```bash
+# Process a single PDF standard:
+python ingest.py --file data/IS_10500_Drinking_Water.pdf
+
+# Process all PDFs in a directory:
+python ingest.py --dir data
+```
 
 ---
+
 
 ### 2. Running the Frontend (Next.js)
 
