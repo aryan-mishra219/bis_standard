@@ -66,13 +66,30 @@ Open a terminal in the root directory and navigate to `backend`:
 
 ```bash
 cd backend
+
+# Create & Activate Virtual Environment (.venv)
+python -m venv .venv
+
+# On Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+
+# On Windows (CMD):
+.\.venv\Scripts\activate.bat
+
+# On macOS/Linux:
+source .venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Run server
 uvicorn main:app --reload --port 8000
 ```
 
 - Backend server URL: `http://localhost:8000`
 - Health check URL: `http://localhost:8000/health`
 - Interactive API Docs (Swagger): `http://localhost:8000/docs`
+
 
 ---
 
