@@ -62,8 +62,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ---
 
-## ⭐ Phase 5, 6 & 7 Hackathon "Wow" Features
+## ⭐ Phase 5, 6, 7 & 8 Hackathon "Wow" Features
 
+- **📍 Dynamic UI Navigators (Phase 8 Process Timelines)**:
+  - **`generate_process_timeline`**: Autonomously parses complex procedural queries (e.g. "What are the steps to apply for a BIS hallmark license?") into visual, numbered vertical step-by-step timelines in the chat UI.
 - **🤖 Autonomous Agentic Tool / Function Calling (Phase 7)**:
   - **`search_testing_labs`**: Automatically detects when users ask to locate or list testing labs (e.g. "Find me a water testing lab in Delhi") and queries the laboratory database.
   - **`verify_hallmark`**: Automatically detects HUID codes (e.g. "Check hallmark ID AB1234") and verifies jewelry purity, jeweler reference, and hallmarking center details.
