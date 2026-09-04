@@ -484,7 +484,7 @@ export default function ChatInterface() {
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
               className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-300 transition text-lg flex items-center justify-center disabled:opacity-50"
-              title="Attach Product Label or Hallmark Image"
+              title="Attach Product Spec Sheet, Label, or Hallmark Image"
             >
               📎
             </button>
@@ -494,7 +494,7 @@ export default function ChatInterface() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about BIS standards, or upload a product label..." 
+              placeholder="Ask a query, paste a spec sheet, or attach an image (📎)..." 
               className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0055A4] focus:ring-1 focus:ring-[#0055A4]"
               disabled={isLoading}
             />
