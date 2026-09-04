@@ -3,3 +3,6 @@ uvicorn
 python-dotenv
 supabase
 pydantic
+pymupdf
+fastembed
+langchain-text-splitters
