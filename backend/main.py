@@ -84,7 +84,7 @@ async def chat(request: ChatRequest):
                                 "content": [
                                     {
                                         "type": "text",
-                                        "text": "Extract any BIS standard numbers (e.g., IS 10500), HUID codes, or product names visible in this image. Output only the extracted entities."
+                                        "text": "Extract all text, numbers, mineral/chemical composition (e.g. TDS, Chloride, Calcium, Magnesium, Bicarbonate, Sulfate, pH), BIS standard numbers (e.g. IS 10500), HUID codes, or brand/product names visible in this label image. List every extracted parameter with its exact value."
                                     },
                                     {
                                         "type": "image_url",
@@ -105,7 +105,7 @@ async def chat(request: ChatRequest):
                     continue
 
             if extracted_text:
-                search_query = f"{request.query} [Extracted from image: {extracted_text}]"
+                search_query = f"PRODUCT LABEL IMAGE DATA EXTRACTED: {extracted_text}\nUSER QUESTION: {request.query}"
                 print(f"Vision OCR Extracted Entities: {extracted_text}")
 
         # 1. Embed the search query
@@ -149,11 +149,17 @@ async def chat(request: ChatRequest):
             "Your goal is to explain Indian Standards to everyday consumers, MSMEs, and startups in simple, easy-to-understand language.\n"
             "You MUST base your factual claims strictly on the provided context. Always cite the relevant Indian Standard code and page number (e.g., [IS 10500, Page 1]).\n\n"
             "RESPONSE FORMATTING GUIDELINES:\n"
-            "1. **Summary & Safety Verdict**: Start with a clear 1-2 sentence summary. If a product label or parameter is evaluated, provide a clear status badge: **✅ SAFE & COMPLIANT** or **⚠️ NON-COMPLIANT / NEEDS ATTENTION**.\n"
-            "2. **Comparison Table**: Whenever analyzing product parameters against Indian Standards, include a clean Markdown table comparing:\n"
-            "   | Parameter | Product Label Value | BIS Permissible Limit | Status |\n"
-            "3. **What is Good vs What Needs Attention**: Use bullet points to highlight **What is Good** (*compliant/healthy parameters*) and **What Needs Attention** (*parameters exceeding limits or missing badges*).\n"
-            "4. **Everyday Language & Rich Formatting**: Use **bold** for key metrics and *italics* for important notes, explanations, or warnings. Keep explanations clear, friendly, and practical.\n"
+            "1. **Summary & Safety Verdict**: Start with a clear 1-2 sentence summary and a prominent status badge (**✅ SAFE & COMPLIANT** or **⚠️ NON-COMPLIANT / NEEDS ATTENTION**).\n"
+            "2. **MANDATORY Product Label vs. BIS Standard Comparison Table**:\n"
+            "   Whenever a product label image or extracted product data is provided, you MUST include a dedicated column called **Product Label Value** showing the exact numbers read from the product label.\n"
+            "   The table MUST follow this exact structure:\n"
+            "   | Parameter | Product Label Value | BIS Permissible Limit | Compliance Status |\n"
+            "   Example row:\n"
+            "   | Total Dissolved Solids (TDS) | **380 mg/l** | Max 500 mg/l (IS 10500) | ✅ Compliant |\n"
+            "   | Chloride | **10 mg/l** | Max 250 mg/l (IS 10500) | ✅ Compliant |\n"
+            "   DO NOT leave out the **Product Label Value** column when product data is present.\n"
+            "3. **What is Good vs What Needs Attention**: Use bullet points to highlight **What is Good** (*compliant/healthy parameters*) and **What Needs Attention** (*parameters exceeding limits or missing attributes*).\n"
+            "4. **Everyday Language & Rich Formatting**: Use **bold** for key metrics and *italics* for important notes or warnings. Keep explanations clear and consumer-friendly.\n"
         )
 
         if request.simplify:
