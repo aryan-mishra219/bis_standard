@@ -8,3 +8,4 @@ fastembed
 langchain-text-splitters
 groq
 numpy
+reportlab

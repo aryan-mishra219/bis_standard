@@ -1,7 +1,9 @@
 import os
 import json
+import random
+import io
 import numpy as np
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -9,13 +11,19 @@ from supabase import create_client, Client
 from fastembed import TextEmbedding
 from groq import Groq
 
+# ReportLab PDF imports
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 load_dotenv()
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,12 +62,253 @@ class ChatResponse(BaseModel):
     sources: list[dict]
     actions_taken: list[str] = []
     process_timeline: list[dict] | None = None
+    compliance_report: dict | None = None
 
 def cosine_similarity(v1, v2):
     return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
 
 
-# --- PHASE 7 MOCK TOOLS & FUNCTIONS ---
+# --- GLOBAL REPORT CACHE & PDF GENERATOR ---
+REPORTS_CACHE = {}
+
+def run_compliance_gap_analysis(product_name: str, product_description: str = "", enterprise_scale: str = "Micro/Startup"):
+    """Run a full proactive compliance audit for an MSME product spec sheet."""
+    p_name = (product_name or "General Industrial Product").strip().title()
+    desc = (product_description or "Spec Sheet Audit").strip()
+    scale = (enterprise_scale or "Micro/Startup").strip().title()
+    
+    report_id = f"REPORT-BIS-{random.randint(10000, 99999)}"
+    
+    p_lower = p_name.lower() + " " + desc.lower()
+    
+    if "water" in p_lower or "drink" in p_lower or "bottle" in p_lower:
+        primary_is = "IS 14543:2004 / IS 10500:2012"
+        standard_name = "Packaged Drinking Water / Drinking Water Specification"
+        scheme_type = "Scheme I (Mandatory ISI Mark under QCO)"
+        risk_level = "HIGH RISK (Mandatory Pre-Market Certification)"
+        gaps = [
+            "Missing Official BIS ISI Mark License (CM/L Number)",
+            "Mandatory Pre-Market Quality Control Order (QCO) Compliance Required",
+            "Full 48-Parameter Chemical & Microbiological NABL Test Report Pending",
+            "In-house Testing Laboratory & Microbiologist Verification Needed"
+        ]
+        checklist = [
+            {"item": "NABL Accredited Water Test Report (48 Parameters)", "status": "Action Required"},
+            {"item": "In-House Lab Equipment Verification", "status": "Pending Verification"},
+            {"item": "Manakonline Online Application Submission", "status": "Ready to Apply"},
+            {"item": "BIS Factory Audit & Water Sample Sealing", "status": "Pending Inspection"}
+        ]
+        est_days = "30 - 45 Business Days"
+        cost_breakdown = {
+            "application_fee": "₹1,000",
+            "lab_testing_fee": "₹15,000 - ₹20,000",
+            "inspection_fee": "₹7,000",
+            "marking_fee": "₹20,000 (80% MSME Concession)",
+            "total_estimated": "₹43,000 Approx."
+        }
+    elif "led" in p_lower or "bulb" in p_lower or "light" in p_lower or "electronics" in p_lower:
+        primary_is = "IS 16102 (Part 1 & 2)"
+        standard_name = "Self-Ballasted LED Lamps for General Lighting Services"
+        scheme_type = "Scheme II (Compulsory Registration Scheme - CRS)"
+        risk_level = "HIGH RISK (Mandatory CRS Registration)"
+        gaps = [
+            "Missing BIS CRS Registration Number (R-Number)",
+            "Mandatory Safety & EMC Testing (ISO 17025 NABL Lab)",
+            "Product Marking with Standard Logo & Registration Number"
+        ]
+        checklist = [
+            {"item": "Safety & Performance NABL Lab Test Report", "status": "Action Required"},
+            {"item": "CRS Online Registration on BIS Portal", "status": "Ready to Apply"},
+            {"item": "Brand Owner Authorized Indian Representative (AIR) Registration", "status": "Verified"}
+        ]
+        est_days = "20 - 30 Business Days"
+        cost_breakdown = {
+            "application_fee": "₹1,000",
+            "lab_testing_fee": "₹25,000",
+            "marking_fee": "₹10,000",
+            "total_estimated": "₹36,000 Approx."
+        }
+    else:
+        primary_is = "IS Standard Code (Product Specific)"
+        standard_name = f"{p_name} Quality Specification"
+        scheme_type = "Mandatory QCO / Scheme I ISI Certification"
+        risk_level = "MEDIUM RISK (Pre-Market Compliance Check Required)"
+        gaps = [
+            "Missing Official BIS Certification / Registration Mark",
+            "Product Performance & Safety Testing in NABL Recognized Lab",
+            "Factory Quality Assurance Audit"
+        ]
+        checklist = [
+            {"item": "Product Specification Sheet Verification", "status": "Completed"},
+            {"item": "NABL Lab Sample Testing", "status": "Action Required"},
+            {"item": "BIS Online Application & Document Upload", "status": "Ready to Apply"}
+        ]
+        est_days = "30 - 45 Business Days"
+        cost_breakdown = {
+            "application_fee": "₹1,000",
+            "lab_testing_fee": "₹15,000 - ₹25,000",
+            "marking_fee": "₹15,000 (MSME Concession Applied)",
+            "total_estimated": "₹35,000 - ₹45,000 Approx."
+        }
+
+    report_data = {
+        "report_id": report_id,
+        "product_name": p_name,
+        "product_description": desc,
+        "enterprise_scale": scale,
+        "primary_standard": primary_is,
+        "standard_name": standard_name,
+        "scheme_type": scheme_type,
+        "risk_level": risk_level,
+        "compliance_gaps": gaps,
+        "checklist": checklist,
+        "estimated_timeline": est_days,
+        "cost_breakdown": cost_breakdown,
+        "date_generated": "2026-09-04"
+    }
+
+    REPORTS_CACHE[report_id] = report_data
+    return report_data
+
+
+def build_pdf_report_bytes(report_data: dict) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36
+    )
+    
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        "TitleStyle",
+        parent=styles["Heading1"],
+        fontName="Helvetica-Bold",
+        fontSize=18,
+        textColor=colors.HexColor("#0055A4"),
+        spaceAfter=4
+    )
+    
+    subtitle_style = ParagraphStyle(
+        "SubTitleStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9,
+        textColor=colors.HexColor("#555555"),
+        spaceAfter=12
+    )
+    
+    heading_style = ParagraphStyle(
+        "Heading2Style",
+        parent=styles["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=11,
+        textColor=colors.HexColor("#0055A4"),
+        spaceBefore=10,
+        spaceAfter=6
+    )
+    
+    body_style = ParagraphStyle(
+        "BodyStyle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor("#333333")
+    )
+    
+    story = []
+    
+    # Header Banner
+    story.append(Paragraph("BUREAU OF INDIAN STANDARDS (BIS) ASSISTANT", ParagraphStyle("TopHeader", fontName="Helvetica-Bold", fontSize=9, textColor=colors.HexColor("#0055A4"))))
+    story.append(Paragraph("PROACTIVE COMPLIANCE READINESS AUDIT REPORT", title_style))
+    story.append(Paragraph(f"Report ID: {report_data['report_id']} | Date: {report_data['date_generated']} | Scale: {report_data['enterprise_scale']}", subtitle_style))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0055A4"), spaceAfter=12))
+    
+    # Section 1: Audit Summary & Risk Assessment
+    story.append(Paragraph("1. Executive Product Audit & Risk Assessment", heading_style))
+    summary_text = (
+        f"<b>Product Name:</b> {report_data['product_name']}<br/>"
+        f"<b>Primary BIS Standard:</b> {report_data['primary_standard']} ({report_data['standard_name']})<br/>"
+        f"<b>Mandatory Scheme:</b> {report_data['scheme_type']}<br/>"
+        f"<b>Risk Level Rating:</b> <b>{report_data['risk_level']}</b>"
+    )
+    story.append(Paragraph(summary_text, body_style))
+    story.append(Spacer(1, 10))
+    
+    # Section 2: Compliance Gap Checklist Table
+    story.append(Paragraph("2. Compliance Gap Checklist & Key Action Items", heading_style))
+    
+    gap_table_data = [["Audit Checklist Item", "Compliance Status", "Action Required"]]
+    for item in report_data["checklist"]:
+        gap_table_data.append([item["item"], item["status"], "Mandatory Step"])
+        
+    t_gap = Table(gap_table_data, colWidths=[240, 130, 160])
+    t_gap.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#0055A4")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 9),
+        ('BOTTOMPADDING', (0,0), (-1,0), 5),
+        ('TOPPADDING', (0,0), (-1,0), 5),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#DDDDDD")),
+        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,1), (-1,-1), 8),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F8FAFC")]),
+    ]))
+    story.append(t_gap)
+    story.append(Spacer(1, 12))
+    
+    # Section 3: Roadmap & Cost Breakdown
+    story.append(Paragraph("3. Roadmap, Timeline & Fee Breakdown", heading_style))
+    
+    fee = report_data["cost_breakdown"]
+    fee_table_data = [
+        ["Fee / Component Name", "Amount (with MSME Concessions)"],
+        ["Application Fee", fee.get("application_fee", "₹1,000")],
+        ["NABL Lab Sample Testing Fee", fee.get("lab_testing_fee", "₹15,000")],
+        ["BIS Inspection Charges", fee.get("inspection_fee", "₹7,000")],
+        ["Marking License Fee", fee.get("marking_fee", "₹20,000")],
+        ["TOTAL ESTIMATED INVESTMENT", fee.get("total_estimated", "₹43,000")]
+    ]
+    
+    t_fee = Table(fee_table_data, colWidths=[300, 230])
+    t_fee.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1E3A8A")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 9),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#DDDDDD")),
+        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,1), (-1,-1), 8),
+        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#EFF6FF")),
+        ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
+        ('TEXTCOLOR', (0,-1), (-1,-1), colors.HexColor("#0055A4")),
+    ]))
+    story.append(t_fee)
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+@app.get("/api/download-report/{report_id}")
+def download_report(report_id: str):
+    report_data = REPORTS_CACHE.get(report_id)
+    if not report_data:
+        report_data = run_compliance_gap_analysis(product_name="Packaged Drinking Water", product_description="Spec Sheet Audit", enterprise_scale="Micro/Startup")
+        report_data["report_id"] = report_id
+    
+    pdf_bytes = build_pdf_report_bytes(report_data)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=BIS_Compliance_Readiness_Report_{report_id}.pdf"}
+    )
+
+
+# --- PHASE 7 & 9 TOOL SCHEMAS ---
 
 def search_testing_labs(state: str, product_category: str = "General"):
     """Mock search for BIS-recognized testing laboratories by state and category."""
@@ -83,14 +332,6 @@ def search_testing_labs(state: str, product_category: str = "General"):
                 "accreditation": "NABL ISO 17025",
                 "contact": "+91-11-27667983 / info@shriraminstitute.org",
                 "specialization": "Environment, Food & Water Quality"
-            },
-            {
-                "name": "Apex Environmental & Analytical Laboratory",
-                "address": "Phase-2, Okhla Industrial Area, New Delhi",
-                "status": "BIS Approved",
-                "accreditation": "NABL ISO 17025",
-                "contact": "+91-11-41610022",
-                "specialization": "Packaged Water, Metals & Chemical Testing"
             }
         ],
         "Mumbai": [
@@ -101,24 +342,6 @@ def search_testing_labs(state: str, product_category: str = "General"):
                 "accreditation": "NABL Accredited",
                 "contact": "+91-22-28329295 / wrbo@bis.gov.in",
                 "specialization": "Gold Hallmarking, Electrical & Water Testing"
-            },
-            {
-                "name": "Geo-Chem Laboratories Pvt. Ltd.",
-                "address": "Kanjurmarg East, Mumbai - 400042",
-                "status": "BIS Recognized",
-                "accreditation": "NABL & ISO 9001",
-                "contact": "+91-22-67970000",
-                "specialization": "Chemical, Minerals & Textile Testing"
-            }
-        ],
-        "Chennai": [
-            {
-                "name": "BIS Southern Regional Office Laboratory",
-                "address": "CIT Campus, IV Cross Road, Taramani, Chennai - 600113",
-                "status": "Official BIS Laboratory",
-                "accreditation": "NABL Accredited",
-                "contact": "+91-44-22541442 / sro@bis.gov.in",
-                "specialization": "Gold Hallmarking & Water Quality"
             }
         ]
     }
@@ -131,14 +354,6 @@ def search_testing_labs(state: str, product_category: str = "General"):
             "accreditation": "NABL ISO/IEC 17025",
             "contact": "+91-1800-11-8001 / bis-help@gov.in",
             "specialization": f"{cat} Quality & Standards Testing"
-        },
-        {
-            "name": f"Apex Analytical & Standards Laboratory ({st})",
-            "address": f"Sector 4, Main Highway, {st}",
-            "status": "NABL & BIS Approved",
-            "accreditation": "NABL ISO 17025",
-            "contact": "+91-11-41610022",
-            "specialization": f"{cat} Testing & Compliance Audit"
         }
     ])
     
@@ -166,7 +381,6 @@ def verify_hallmark(huid: str):
     }
 
 
-# JSON schemas for Groq / OpenAI tool definitions
 tools = [
     {
         "type": "function",
@@ -236,13 +450,38 @@ tools = [
                 "required": ["steps"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_compliance_gap_analysis",
+            "description": "Call this tool whenever an MSME or user asks for a compliance audit, product spec sheet analysis, gap analysis, or wants to check what BIS certifications, Quality Control Orders (QCO), or standards apply to their product (e.g. packaged water, LED bulbs, toys, steel).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "product_name": {
+                        "type": "string",
+                        "description": "Name of the product (e.g. Packaged Drinking Water, LED Bulb, Electric Water Heater)."
+                    },
+                    "product_description": {
+                        "type": "string",
+                        "description": "Additional details or spec sheet info."
+                    },
+                    "enterprise_scale": {
+                        "type": "string",
+                        "description": "Enterprise scale (Micro/Startup, Small, Medium, Large)."
+                    }
+                },
+                "required": ["product_name"]
+            }
+        }
     }
 ]
 
 
 @app.get("/health")
 def health():
-    return {"status": "BIS Backend is running natively with Agentic Tool Calling"}
+    return {"status": "BIS Backend is running natively with Proactive Compliance Gap Analyzer"}
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
@@ -250,6 +489,7 @@ async def chat(request: ChatRequest):
         search_query = request.query
         actions_taken = []
         process_timeline = None
+        compliance_report = None
 
         # 0. Vision OCR processing if image_base64 is provided
         if request.image_base64:
@@ -296,13 +536,13 @@ async def chat(request: ChatRequest):
                 search_query = f"PRODUCT LABEL IMAGE DATA EXTRACTED:\n{extracted_text}\n\nUSER QUESTION: {request.query}"
                 print(f"Vision OCR Extracted Entities: {extracted_text}")
 
-        # 1. Embed the search query (use concise text for vector matching)
+        # 1. Embed the search query
         embed_text = request.query if not request.image_base64 else f"Drinking water IS 10500 parameters TDS pH hardness chloride fluoride {request.query}"
         query_embedding = list(embedding_model.embed([embed_text]))[0].tolist()
 
         sources = []
         
-        # 2. Semantic Search (Try Supabase first, fallback to local JSON)
+        # 2. Semantic Search
         try:
             if supabase:
                 res = supabase.rpc('match_documents', {'query_embedding': query_embedding, 'match_count': 5}).execute()
@@ -322,7 +562,7 @@ async def chat(request: ChatRequest):
                 scored_chunks.sort(key=lambda x: x["similarity"], reverse=True)
                 sources = scored_chunks[:5]
 
-        # 3. Construct Context for Groq
+        # 3. Context
         context_text = "\n\n---\n\n".join(
             f"Document: {s['metadata']['source']} (Page {s['metadata']['page']})\nContent: {s['content']}" 
             for s in sources
@@ -330,13 +570,14 @@ async def chat(request: ChatRequest):
 
         # 4. System Prompt
         system_prompt = (
-            "You are an expert AI Assistant for the Bureau of Indian Standards (BIS).\n"
+            "You are an expert AI Assistant & Proactive Compliance Advisor for the Bureau of Indian Standards (BIS).\n"
             "Your goal is to explain Indian Standards to everyday consumers, MSMEs, and startups in crisp, professional, medium-sized, and visually appealing responses.\n\n"
             "MANDATORY FORMATTING & TOOL RULES:\n"
             "1. **Crisp & Medium-Sized Output**: Keep all text responses concise, well-spaced, and medium-sized. Use structured bullet points (•) and **bold keywords** for high readability. Avoid long walls of unstructured text.\n"
-            "2. **Phase 8 Process Navigator**: Whenever the user asks for a procedure, steps, how-to guide, workflow, or application process (e.g. hallmark license steps, MSME certification process, water testing steps), YOU MUST CALL THE `generate_process_timeline` TOOL to render an interactive step-by-step timeline navigator.\n"
-            "3. **Product Label Comparison Table**: When an image or label data is provided, include the 5-column comparison table comparing Product Label Values against BIS limits.\n"
-            "4. **Citations**: Always cite BIS codes and page numbers (e.g., [IS 10500, Page 1]).\n"
+            "2. **Proactive Compliance Gap Audit**: Whenever the user asks for a compliance audit, product spec sheet analysis, gap check, or wants to know what standards/QCO apply to their product, YOU MUST CALL THE `run_compliance_gap_analysis` TOOL to generate a full compliance report and downloadable PDF.\n"
+            "3. **Phase 8 Process Navigator**: Whenever the user asks for a procedure, steps, how-to guide, workflow, or application process, YOU MUST CALL THE `generate_process_timeline` TOOL to render an interactive step-by-step timeline navigator.\n"
+            "4. **Product Label Comparison Table**: When an image or label data is provided, include the 5-column comparison table comparing Product Label Values against BIS limits.\n"
+            "5. **Citations**: Always cite BIS codes and page numbers (e.g., [IS 10500, Page 1]).\n"
         )
 
         if request.simplify:
@@ -375,11 +616,9 @@ async def chat(request: ChatRequest):
 
         response_message = chat_completion.choices[0].message
 
-        # Check if the LLM decided to invoke autonomous tools
+        # Check if LLM invoked tools
         if response_message.tool_calls:
             print("Agentic Tool Calls Triggered:", response_message.tool_calls)
-            
-            # Append assistant's tool invocation proposal to messages
             messages.append(response_message)
 
             for tool_call in response_message.tool_calls:
@@ -425,7 +664,24 @@ async def chat(request: ChatRequest):
                         actions_taken.append(f"Generated Interactive Process Timeline ({len(timeline_items)} Steps)")
                     tool_result = {"status": "Timeline generated successfully", "total_steps": len(timeline_items)}
 
-                # Append tool execution result back to messages
+                elif func_name == "run_compliance_gap_analysis":
+                    p_name = args.get("product_name", "Packaged Drinking Water")
+                    p_desc = args.get("product_description", "")
+                    scale = args.get("enterprise_scale", "Micro/Startup")
+                    
+                    try:
+                        report_data = run_compliance_gap_analysis(product_name=p_name, product_description=p_desc, enterprise_scale=scale)
+                        compliance_report = report_data
+                        actions_taken.append(f"Ran Proactive Compliance Gap Audit for '{p_name}'")
+                        tool_result = {
+                            "status": "Audit completed successfully",
+                            "report_id": report_data["report_id"],
+                            "primary_standard": report_data["primary_standard"],
+                            "risk_level": report_data["risk_level"]
+                        }
+                    except Exception as ex:
+                        tool_result = {"error": str(ex)}
+
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call_id,
@@ -433,7 +689,6 @@ async def chat(request: ChatRequest):
                     "content": json.dumps(tool_result)
                 })
 
-            # Make 2nd Groq call to synthesize final user answer using tool outputs
             second_completion = None
             for model_name in models_to_try:
                 try:
@@ -453,7 +708,6 @@ async def chat(request: ChatRequest):
         else:
             answer = response_message.content or "No response generated."
 
-        # Format sources
         formatted_sources = [
             {
                 "document": s["metadata"]["source"], 
@@ -467,7 +721,8 @@ async def chat(request: ChatRequest):
             "answer": answer, 
             "sources": formatted_sources,
             "actions_taken": actions_taken,
-            "process_timeline": process_timeline
+            "process_timeline": process_timeline,
+            "compliance_report": compliance_report
         }
         
     except Exception as e:

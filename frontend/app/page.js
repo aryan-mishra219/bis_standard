@@ -113,23 +113,24 @@ export default function ChatInterface() {
             content: data.answer, 
             sources: data.sources,
             actions_taken: data.actions_taken || [],
-            process_timeline: data.process_timeline || null
+            process_timeline: data.process_timeline || null,
+            compliance_report: data.compliance_report || null
           }
         ]);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [], process_timeline: null }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
       }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [], actions_taken: [], process_timeline: null }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   const starterPrompts = [
-    "What are the permissible limits for lead in drinking water as per IS 10500?",
-    "Find me a water testing lab in Delhi",
-    "Check hallmark ID AB1234"
+    "Audit my product spec sheet for bottled drinking water plant",
+    "What are the steps to apply for a BIS hallmark license?",
+    "Find me a water testing lab in Delhi"
   ];
 
   // Fee calculation logic
@@ -340,6 +341,72 @@ export default function ChatInterface() {
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        </div>
+                      {/* Phase 9 Proactive Compliance Gap Report Banner & Card */}
+                      {msg.compliance_report && (
+                        <div className="mt-5 mb-4 p-5 bg-gradient-to-br from-slate-900 to-[#003366] text-white rounded-xl shadow-lg border border-blue-900">
+                          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-800">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xl">🛡️</span>
+                              <div>
+                                <h3 className="text-sm font-bold tracking-wide uppercase text-blue-200">
+                                  Proactive Compliance Readiness Report
+                                </h3>
+                                <p className="text-[11px] text-blue-300">
+                                  ID: <span className="font-mono font-bold text-white">{msg.compliance_report.report_id}</span> | Product: {msg.compliance_report.product_name}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="px-2.5 py-1 bg-amber-400 text-blue-950 font-extrabold text-[10px] rounded-full uppercase tracking-wider shadow">
+                              {msg.compliance_report.risk_level}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4 text-xs">
+                            <div className="bg-white/10 p-3 rounded-lg border border-white/10 space-y-1.5">
+                              <div className="font-semibold text-blue-200 uppercase text-[10px]">Applicable Standard & Scheme</div>
+                              <div className="font-bold text-white text-sm">{msg.compliance_report.primary_standard}</div>
+                              <div className="text-blue-100">{msg.compliance_report.standard_name}</div>
+                              <div className="text-emerald-300 font-medium pt-1">📌 {msg.compliance_report.scheme_type}</div>
+                            </div>
+
+                            <div className="bg-white/10 p-3 rounded-lg border border-white/10 space-y-1.5">
+                              <div className="font-semibold text-blue-200 uppercase text-[10px]">Timeline & MSME Budget Estimate</div>
+                              <div className="font-bold text-amber-300 text-sm">⏱️ {msg.compliance_report.estimated_timeline}</div>
+                              <div className="text-emerald-400 font-bold text-base">
+                                💰 {msg.compliance_report.cost_breakdown?.total_estimated || "₹43,000"}
+                              </div>
+                              <div className="text-[10px] text-blue-200">Includes Concession for {msg.compliance_report.enterprise_scale} Enterprise</div>
+                            </div>
+                          </div>
+
+                          {/* Gap Checklist */}
+                          {msg.compliance_report.compliance_gaps && msg.compliance_report.compliance_gaps.length > 0 && (
+                            <div className="mb-4">
+                              <div className="text-[11px] font-bold text-blue-200 uppercase tracking-wider mb-2">Identified Compliance Gaps & Action Checklist:</div>
+                              <div className="space-y-1.5">
+                                {msg.compliance_report.compliance_gaps.map((gap, i) => (
+                                  <div key={i} className="flex items-start gap-2 text-xs text-blue-50 bg-black/20 p-2 rounded border border-white/5">
+                                    <span className="text-amber-400 font-bold">⚠️</span>
+                                    <span>{gap}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* PDF Download Button */}
+                          <div className="pt-2 flex justify-end">
+                            <a 
+                              href={`http://localhost:8000/api/download-report/${msg.compliance_report.report_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-extrabold shadow-md transition transform hover:scale-105"
+                            >
+                              <span>📄</span>
+                              <span>Download Official PDF Report ({msg.compliance_report.report_id}.pdf)</span>
+                            </a>
                           </div>
                         </div>
                       )}
