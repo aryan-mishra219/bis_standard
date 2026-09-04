@@ -13,6 +13,9 @@ export default function ChatInterface() {
   const [showFeeEstimator, setShowFeeEstimator] = useState(false);
   const [enterpriseType, setEnterpriseType] = useState("Large");
 
+  // Phase 6 Multimodal Vision States
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -23,20 +26,50 @@ export default function ChatInterface() {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSend = async (overrideQuery = null) => {
     const query = overrideQuery || input;
-    if (!query.trim()) return;
+    if (!query.trim() && !imagePreview) return;
 
-    const userMsg = { role: "user", content: query };
+    const currentImage = imagePreview;
+
+    const userMsg = { 
+      role: "user", 
+      content: query || "Analyzed attached image for BIS Standards.",
+      image: currentImage
+    };
+    
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setIsLoading(true);
 
     try {
       const res = await fetch("http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, language, simplify }),
+        body: JSON.stringify({ 
+          query: query || "What BIS standard or information is in this image?", 
+          language, 
+          simplify,
+          image_base64: currentImage
+        }),
       });
       
       const data = await res.json();
@@ -192,6 +225,13 @@ export default function ChatInterface() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] p-4 rounded-xl shadow-sm ${msg.role === "user" ? "bg-[#0055A4] text-white rounded-br-none" : "bg-white border border-gray-200 rounded-bl-none"}`}>
+                  {msg.image && (
+                    <img 
+                      src={msg.image} 
+                      alt="Uploaded BIS label or hallmark" 
+                      className="max-h-48 rounded-lg mb-3 border border-blue-200 object-contain bg-black/10" 
+                    />
+                  )}
                   {msg.role === "assistant" ? (
                     <div className="prose prose-sm max-w-none text-gray-700">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -213,7 +253,7 @@ export default function ChatInterface() {
                       )}
                     </div>
                   ) : (
-                    <p>{msg.content}</p>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
                   )}
                 </div>
               </div>
@@ -234,23 +274,62 @@ export default function ChatInterface() {
 
       {/* Input Area */}
       <footer className="bg-white border-t border-gray-200 p-4">
-        <div className="max-w-4xl mx-auto flex gap-3">
-          <input 
-            type="text" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask about BIS standards, certification, or hallmarking..." 
-            className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0055A4] focus:ring-1 focus:ring-[#0055A4]"
-            disabled={isLoading}
-          />
-          <button 
-            onClick={() => handleSend()}
-            disabled={isLoading || !input.trim()}
-            className="bg-[#0055A4] hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition disabled:opacity-50"
-          >
-            Send
-          </button>
+        <div className="max-w-4xl mx-auto space-y-3">
+          {/* Image Preview Thumbnail */}
+          {imagePreview && (
+            <div className="relative inline-block bg-gray-100 p-1.5 border border-gray-300 rounded-lg shadow-sm">
+              <img 
+                src={imagePreview} 
+                alt="Selected preview" 
+                className="h-20 w-auto rounded object-cover" 
+              />
+              <button 
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow hover:bg-red-700 transition"
+                title="Remove image"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-3 items-center">
+            {/* Hidden File Input */}
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              accept="image/*" 
+              onChange={handleImageSelect}
+              className="hidden" 
+            />
+
+            {/* Paperclip Upload Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+              className="p-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-300 transition text-lg flex items-center justify-center disabled:opacity-50"
+              title="Attach Product Label or Hallmark Image"
+            >
+              📎
+            </button>
+
+            <input 
+              type="text" 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Ask about BIS standards, or upload a product label..." 
+              className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0055A4] focus:ring-1 focus:ring-[#0055A4]"
+              disabled={isLoading}
+            />
+            <button 
+              onClick={() => handleSend()}
+              disabled={isLoading || (!input.trim() && !imagePreview)}
+              className="bg-[#0055A4] hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition disabled:opacity-50"
+            >
+              Send
+            </button>
+          </div>
         </div>
       </footer>
     </div>

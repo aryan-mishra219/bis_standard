@@ -47,6 +47,7 @@ class ChatRequest(BaseModel):
     query: str
     language: str = "English"
     simplify: bool = False
+    image_base64: str | None = None
 
 class ChatResponse(BaseModel):
     answer: str
@@ -62,8 +63,54 @@ def health():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        # 1. Embed the query
-        query_embedding = list(embedding_model.embed([request.query]))[0].tolist()
+        search_query = request.query
+
+        # 0. Vision OCR processing if image_base64 is provided
+        if request.image_base64:
+            clean_b64 = request.image_base64
+            if "," in clean_b64:
+                clean_b64 = clean_b64.split(",")[1]
+
+            vision_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "groq/compound"]
+            extracted_text = ""
+            
+            for v_model in vision_models:
+                try:
+                    vision_completion = groq_client.chat.completions.create(
+                        model=v_model,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "Extract any BIS standard numbers (e.g., IS 10500), HUID codes, or product names visible in this image. Output only the extracted entities."
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/jpeg;base64,{clean_b64}"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        temperature=0.1,
+                    )
+                    extracted_text = vision_completion.choices[0].message.content.strip()
+                    if extracted_text:
+                        break
+                except Exception as v_err:
+                    print(f"Vision model '{v_model}' error: {v_err}")
+                    continue
+
+            if extracted_text:
+                search_query = f"{request.query} [Extracted from image: {extracted_text}]"
+                print(f"Vision OCR Extracted Entities: {extracted_text}")
+
+        # 1. Embed the search query
+        query_embedding = list(embedding_model.embed([search_query]))[0].tolist()
+
         
         sources = []
         
@@ -115,8 +162,9 @@ async def chat(request: ChatRequest):
         
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Context:\n{context_text}\n\nUser Query: {request.query}"}
+            {"role": "user", "content": f"Context:\n{context_text}\n\nUser Query: {search_query}"}
         ]
+
 
         # Call Groq LLM with model fallbacks
         models_to_try = ["llama-3.3-70b-versatile", "qwen/qwen3.8-27b", "groq/compound"]

@@ -58,17 +58,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 | Method | Endpoint | Description | Expected Payload / Output |
 | --- | --- | --- | --- |
 | `GET` | `/health` | Backend Health Check | `{"status": "BIS Backend is running natively"}` |
-| `POST` | `/api/chat` | Multilingual & ELI5 RAG Query | Payload: `{"query": "string", "language": "English|Hindi|Tamil|Bengali", "simplify": bool}` -> Output: `{"answer": "string", "sources": [...]}` |
+| `POST` | `/api/chat` | Multilingual, ELI5 & Vision RAG Query | Payload: `{"query": "string", "language": "English|Hindi|Tamil|Bengali", "simplify": bool, "image_base64": "string"}` -> Output: `{"answer": "string", "sources": [...]}` |
 
 ---
 
-## ⭐ Phase 5 "Wow" Features
+## ⭐ Phase 5 & 6 Hackathon "Wow" Features
 
+- **📷 Multimodal Vision & OCR**: Upload product label images or hallmarks (📎). Groq Vision OCR (`llama-3.2-11b-vision-preview`) extracts IS standard codes, HUIDs, and product names automatically for semantic search.
 - **🧒 ELI5 (Explain Like I'm 5)**: Toggle simplification mode to receive answers in plain, easy-to-understand language.
 - **🌐 Multilingual Support**: Query & receive responses strictly in English, Hindi (हिंदी), Tamil (தமிழ்), or Bengali (বাংলা).
 - **💰 BIS Fee Estimator**: Interactive calculator providing real-time marking fee estimates with 50% concession for Small Enterprises and 80% for Micro/Startups.
 
 ---
+
 
 
 
