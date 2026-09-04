@@ -1,4 +1,4 @@
-# AI-Powered Intelligent Assistant for Indian Standards (BIS)
+# M.A.N.A.K (Multilingual Assistant for National Accreditation and Knowledge)
 
 An intelligent assistant application built for Indian Standards (BIS) compliance, documentation, and query processing.
 
