@@ -73,6 +73,8 @@ export default function ChatInterface() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
   const handleSend = async (overrideQuery = null) => {
     const query = overrideQuery || input;
     if (!query.trim() && !imagePreview) return;
@@ -92,7 +94,7 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/chat", {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -121,7 +123,7 @@ export default function ChatInterface() {
         setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
       }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please check backend connection.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
     } finally {
       setIsLoading(false);
     }
@@ -400,7 +402,7 @@ export default function ChatInterface() {
                           {/* PDF Download Button */}
                           <div className="pt-2 flex justify-end">
                             <a 
-                              href={`http://localhost:8000/api/download-report/${msg.compliance_report.report_id}`}
+                              href={`${API_BASE_URL}/api/download-report/${msg.compliance_report.report_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-extrabold shadow-md transition transform hover:scale-105"
