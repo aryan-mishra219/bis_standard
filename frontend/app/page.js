@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState([]);
@@ -234,7 +236,30 @@ export default function ChatInterface() {
                   )}
                   {msg.role === "assistant" ? (
                     <div className="prose prose-sm max-w-none text-gray-700">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          table: ({ node, ...props }) => (
+                            <div className="overflow-x-auto my-4 border border-gray-200 rounded-lg shadow-sm">
+                              <table className="min-w-full divide-y divide-gray-200 text-sm bg-white" {...props} />
+                            </div>
+                          ),
+                          thead: ({ node, ...props }) => (
+                            <thead className="bg-blue-50 text-[#0055A4] font-semibold" {...props} />
+                          ),
+                          th: ({ node, ...props }) => (
+                            <th className="px-4 py-2.5 text-left font-bold border-b border-gray-200" {...props} />
+                          ),
+                          td: ({ node, ...props }) => (
+                            <td className="px-4 py-2 border-b border-gray-100 text-gray-700" {...props} />
+                          ),
+                          tr: ({ node, ...props }) => (
+                            <tr className="hover:bg-blue-50/50 transition-colors" {...props} />
+                          ),
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
                       
                       {msg.sources && msg.sources.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-gray-100">
@@ -253,6 +278,7 @@ export default function ChatInterface() {
                       )}
                     </div>
                   ) : (
+
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   )}
                 </div>
