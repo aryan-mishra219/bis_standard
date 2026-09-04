@@ -6,3 +6,5 @@ pydantic
 pymupdf
 fastembed
 langchain-text-splitters
+groq
+numpy
