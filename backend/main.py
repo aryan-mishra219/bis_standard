@@ -71,7 +71,8 @@ async def chat(request: ChatRequest):
             if "," in clean_b64:
                 clean_b64 = clean_b64.split(",")[1]
 
-            vision_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview", "groq/compound"]
+            img_data_url = request.image_base64 if request.image_base64.startswith("data:image") else f"data:image/png;base64,{clean_b64}"
+            vision_models = ["qwen/qwen3.8-27b", "qwen/qwen3.6-27b"]
             extracted_text = ""
             
             for v_model in vision_models:
@@ -89,7 +90,7 @@ async def chat(request: ChatRequest):
                                     {
                                         "type": "image_url",
                                         "image_url": {
-                                            "url": f"data:image/jpeg;base64,{clean_b64}"
+                                            "url": img_data_url
                                         }
                                     }
                                 ]
@@ -105,13 +106,13 @@ async def chat(request: ChatRequest):
                     continue
 
             if extracted_text:
-                search_query = f"PRODUCT LABEL IMAGE DATA EXTRACTED: {extracted_text}\nUSER QUESTION: {request.query}"
+                search_query = f"PRODUCT LABEL IMAGE DATA EXTRACTED:\n{extracted_text}\n\nUSER QUESTION: {request.query}"
                 print(f"Vision OCR Extracted Entities: {extracted_text}")
 
-        # 1. Embed the search query
-        query_embedding = list(embedding_model.embed([search_query]))[0].tolist()
+        # 1. Embed the search query (use concise text for vector matching)
+        embed_text = request.query if not request.image_base64 else f"Drinking water IS 10500 parameters TDS pH hardness chloride fluoride {request.query}"
+        query_embedding = list(embedding_model.embed([embed_text]))[0].tolist()
 
-        
         sources = []
         
         # 2. Semantic Search (Try Supabase first, fallback to local JSON)
@@ -151,13 +152,13 @@ async def chat(request: ChatRequest):
             "RESPONSE FORMATTING GUIDELINES:\n"
             "1. **Summary & Safety Verdict**: Start with a clear 1-2 sentence summary and a prominent status badge (**✅ SAFE & COMPLIANT** or **⚠️ NON-COMPLIANT / NEEDS ATTENTION**).\n"
             "2. **MANDATORY Product Label vs. BIS Standard Comparison Table**:\n"
-            "   Whenever a product label image or extracted product data is provided, you MUST include a dedicated column called **Product Label Value** showing the exact numbers read from the product label.\n"
-            "   The table MUST follow this exact structure:\n"
-            "   | Parameter | Product Label Value | BIS Permissible Limit | Compliance Status |\n"
-            "   Example row:\n"
-            "   | Total Dissolved Solids (TDS) | **380 mg/l** | Max 500 mg/l (IS 10500) | ✅ Compliant |\n"
-            "   | Chloride | **10 mg/l** | Max 250 mg/l (IS 10500) | ✅ Compliant |\n"
-            "   DO NOT leave out the **Product Label Value** column when product data is present.\n"
+            "   - You MUST include a comparison table comparing parameters analyzed against BIS standard limits!\n"
+            "   - The table columns MUST be:\n"
+            "     | Parameter | Product Label Value | BIS Desirable Limit | BIS Permissible Limit | Compliance Status |\n"
+            "   - For parameters present on the product label (e.g. TDS: 180 mg/l, Calcium: 25 mg/l, Magnesium: 35 mg/l, Chloride: 10 mg/l):\n"
+            "     Show the exact **Product Label Value** in bold (e.g., **180 mg/l**).\n"
+            "   - For standard BIS parameters not printed on the product label (e.g. pH, Color, Turbidity), write `Not Listed on Label` under Product Label Value.\n"
+            "   - DO NOT output `N/A` for parameters that WERE extracted from the label image or user text!\n"
             "3. **What is Good vs What Needs Attention**: Use bullet points to highlight **What is Good** (*compliant/healthy parameters*) and **What Needs Attention** (*parameters exceeding limits or missing attributes*).\n"
             "4. **Everyday Language & Rich Formatting**: Use **bold** for key metrics and *italics* for important notes or warnings. Keep explanations clear and consumer-friendly.\n"
         )
