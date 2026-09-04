@@ -55,11 +55,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ## 🔌 API Endpoints
 
-| Method | Endpoint | Description | Expected Output |
+| Method | Endpoint | Description | Expected Payload / Output |
 | --- | --- | --- | --- |
 | `GET` | `/health` | Backend Health Check | `{"status": "BIS Backend is running natively"}` |
+| `POST` | `/api/chat` | RAG Query with Citation Sources | Payload: `{"query": "string"}` -> Output: `{"answer": "string", "sources": [...]}` |
 
 ---
+
 
 ## 🚀 Getting Started
 
@@ -104,7 +106,15 @@ python ingest.py --file data/IS_10500_Drinking_Water.pdf
 python ingest.py --dir data
 ```
 
+#### Testing the RAG Engine CLI
+Once Uvicorn server is running (`uvicorn main:app --reload --port 8000`), run the interactive CLI test script:
+
+```bash
+python test_chat.py
+```
+
 ---
+
 
 
 ### 2. Running the Frontend (Next.js)
