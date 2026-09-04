@@ -316,7 +316,7 @@ export default function ChatInterface() {
 
                       {/* Phase 8 Dynamic Process Timeline Navigator */}
                       {msg.process_timeline && msg.process_timeline.length > 0 && (
-                        <div className="mt-5 mb-4 p-5 bg-gradient-to-br from-blue-50/90 to-indigo-50/70 border border-blue-200 rounded-xl shadow-sm">
+                        <div className="mt-5 mb-4 p-5 bg-linear-to-br from-blue-50/90 to-indigo-50/70 border border-blue-200 rounded-xl shadow-sm">
                           <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-[#0055A4]">
                             <span className="text-base">📍</span>
                             <span>Interactive Process Navigator ({msg.process_timeline.length} Sequential Steps)</span>
@@ -326,7 +326,7 @@ export default function ChatInterface() {
                             {msg.process_timeline.map((step, idx) => (
                               <div key={idx} className="relative group">
                                 {/* Numbered Step Circle */}
-                                <div className="absolute -left-[41px] top-0 w-7 h-7 rounded-full bg-[#0055A4] text-white text-xs font-bold flex items-center justify-center shadow-md ring-4 ring-white group-hover:scale-110 transition-transform">
+                                <div className="absolute -left-10 top-0 w-7 h-7 rounded-full bg-[#0055A4] text-white text-xs font-bold flex items-center justify-center shadow-md ring-4 ring-white group-hover:scale-110 transition-transform">
                                   {step.step_number || idx + 1}
                                 </div>
 
@@ -346,7 +346,7 @@ export default function ChatInterface() {
                       )}
                       {/* Phase 9 Proactive Compliance Gap Report Banner & Card */}
                       {msg.compliance_report && (
-                        <div className="mt-5 mb-4 p-5 bg-gradient-to-br from-slate-900 to-[#003366] text-white rounded-xl shadow-lg border border-blue-900">
+                        <div className="mt-5 mb-4 p-5 bg-linear-to-br from-slate-900 to-[#003366] text-white rounded-xl shadow-lg border border-blue-900">
                           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-800">
                             <div className="flex items-center gap-2">
                               <span className="text-xl">🛡️</span>
