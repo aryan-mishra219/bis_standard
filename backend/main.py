@@ -52,18 +52,171 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: list[dict]
+    actions_taken: list[str] = []
 
 def cosine_similarity(v1, v2):
     return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
 
+
+# --- PHASE 7 MOCK TOOLS & FUNCTIONS ---
+
+def search_testing_labs(state: str, product_category: str = "General"):
+    """Mock search for BIS-recognized testing laboratories by state and category."""
+    st = (state or "Delhi").strip().title()
+    cat = (product_category or "Water").strip().title()
+    
+    labs_database = {
+        "Delhi": [
+            {
+                "name": "National Test House (NTH), Northern Region",
+                "address": "Kamla Nehru Nagar, Ghaziabad / Delhi NCR",
+                "status": "BIS Recognized",
+                "accreditation": "NABL Accredited (ISO/IEC 17025)",
+                "contact": "+91-11-23389472 / nth-delhi@gov.in",
+                "specialization": "Water (IS 10500), Chemical & Material Testing"
+            },
+            {
+                "name": "Shriram Institute for Industrial Research",
+                "address": "19, University Road, Delhi - 110007",
+                "status": "BIS Recognized",
+                "accreditation": "NABL ISO 17025",
+                "contact": "+91-11-27667983 / info@shriraminstitute.org",
+                "specialization": "Environment, Food & Water Quality"
+            },
+            {
+                "name": "Apex Environmental & Analytical Laboratory",
+                "address": "Phase-2, Okhla Industrial Area, New Delhi",
+                "status": "BIS Approved",
+                "accreditation": "NABL ISO 17025",
+                "contact": "+91-11-41610022",
+                "specialization": "Packaged Water, Metals & Chemical Testing"
+            }
+        ],
+        "Mumbai": [
+            {
+                "name": "BIS Central Laboratory, Western Region",
+                "address": "Plot No. E-9, MIDC, Andheri East, Mumbai - 400093",
+                "status": "Official BIS Central Lab",
+                "accreditation": "NABL Accredited",
+                "contact": "+91-22-28329295 / wrbo@bis.gov.in",
+                "specialization": "Gold Hallmarking, Electrical & Water Testing"
+            },
+            {
+                "name": "Geo-Chem Laboratories Pvt. Ltd.",
+                "address": "Kanjurmarg East, Mumbai - 400042",
+                "status": "BIS Recognized",
+                "accreditation": "NABL & ISO 9001",
+                "contact": "+91-22-67970000",
+                "specialization": "Chemical, Minerals & Textile Testing"
+            }
+        ],
+        "Chennai": [
+            {
+                "name": "BIS Southern Regional Office Laboratory",
+                "address": "CIT Campus, IV Cross Road, Taramani, Chennai - 600113",
+                "status": "Official BIS Laboratory",
+                "accreditation": "NABL Accredited",
+                "contact": "+91-44-22541442 / sro@bis.gov.in",
+                "specialization": "Gold Hallmarking & Water Quality"
+            }
+        ]
+    }
+    
+    matched = labs_database.get(st, [
+        {
+            "name": f"Regional BIS Recognized Testing Center ({st})",
+            "address": f"Central Industrial Hub, {st}",
+            "status": "BIS Recognized",
+            "accreditation": "NABL ISO/IEC 17025",
+            "contact": "+91-1800-11-8001 / bis-help@gov.in",
+            "specialization": f"{cat} Quality & Standards Testing"
+        },
+        {
+            "name": f"Apex Analytical & Standards Laboratory ({st})",
+            "address": f"Sector 4, Main Highway, {st}",
+            "status": "NABL & BIS Approved",
+            "accreditation": "NABL ISO 17025",
+            "contact": "+91-11-41610022",
+            "specialization": f"{cat} Testing & Compliance Audit"
+        }
+    ])
+    
+    return {
+        "query_state": st,
+        "product_category": cat,
+        "total_labs": len(matched),
+        "laboratories": matched
+    }
+
+
+def verify_hallmark(huid: str):
+    """Mock verification of a BIS Hallmark Unique Identification (HUID) code."""
+    clean_huid = (huid or "AB1234").strip().upper()
+    return {
+        "huid": clean_huid,
+        "status": "VERIFIED & AUTHENTIC",
+        "article_type": "Gold Ring / Bangle Set",
+        "purity": "22K916 (22 Carat Gold - 91.6% Purity)",
+        "jeweler_name": "Tanishq / Titan Company Ltd (BIS Ref: J-90412)",
+        "hallmarking_center": "National Assay & Hallmarking Center (AHC #104, Delhi)",
+        "date_of_hallmarking": "2025-11-14",
+        "bis_logo_present": True,
+        "verification_notes": "Official BIS HUID registered in Bureau of Indian Standards Central Portal."
+    }
+
+
+# JSON schemas for Groq / OpenAI tool definitions
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_testing_labs",
+            "description": "Search for official BIS-recognized testing laboratories by Indian state/city and product category (e.g. Water, Gold, Electronics, Steel). Use whenever user asks to find, locate, or list testing labs.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "string",
+                        "description": "The Indian state or city (e.g. Delhi, Mumbai, Tamil Nadu, Maharashtra, Karnataka)."
+                    },
+                    "product_category": {
+                        "type": "string",
+                        "description": "Product or material category being tested (e.g. Water, Gold, Electronics, Steel)."
+                    }
+                },
+                "required": ["state"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "verify_hallmark",
+            "description": "Verify a BIS Hallmark Unique Identification (HUID) code for gold or silver jewelry. Use whenever user provides a 6-character HUID code (like AB1234, 90412X) or asks to check a hallmark ID.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "huid": {
+                        "type": "string",
+                        "description": "The 6-character HUID alphanumeric code."
+                    }
+                },
+                "required": ["huid"]
+            }
+        }
+    }
+]
+
+
 @app.get("/health")
 def health():
-    return {"status": "BIS Backend is running natively"}
+    return {"status": "BIS Backend is running natively with Agentic Tool Calling"}
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
         search_query = request.query
+        actions_taken = []
 
         # 0. Vision OCR processing if image_base64 is provided
         if request.image_base64:
@@ -134,33 +287,23 @@ async def chat(request: ChatRequest):
                     scored_chunks.append({**chunk, "similarity": float(sim)})
                 scored_chunks.sort(key=lambda x: x["similarity"], reverse=True)
                 sources = scored_chunks[:5]
-        
-        if not sources:
-            return {"answer": "I do not have access to any BIS documents regarding this query.", "sources": []}
 
         # 3. Construct Context for Groq
         context_text = "\n\n---\n\n".join(
             f"Document: {s['metadata']['source']} (Page {s['metadata']['page']})\nContent: {s['content']}" 
             for s in sources
-        )
+        ) if sources else "No specific document vector context found."
 
-        # 4. Call Groq LLM with refined consumer-friendly prompt
+        # 4. System Prompt
         system_prompt = (
             "You are an expert AI Assistant for the Bureau of Indian Standards (BIS).\n"
             "Your goal is to explain Indian Standards to everyday consumers, MSMEs, and startups in simple, easy-to-understand language.\n"
-            "You MUST base your factual claims strictly on the provided context. Always cite the relevant Indian Standard code and page number (e.g., [IS 10500, Page 1]).\n\n"
+            "You have access to autonomous tools for searching testing laboratories and verifying hallmark HUID codes.\n"
+            "When answering using tool results or context, cite relevant details clearly.\n\n"
             "RESPONSE FORMATTING GUIDELINES:\n"
-            "1. **Summary & Safety Verdict**: Start with a clear 1-2 sentence summary and a prominent status badge (**✅ SAFE & COMPLIANT** or **⚠️ NON-COMPLIANT / NEEDS ATTENTION**).\n"
-            "2. **MANDATORY Product Label vs. BIS Standard Comparison Table**:\n"
-            "   - You MUST include a comparison table comparing parameters analyzed against BIS standard limits!\n"
-            "   - The table columns MUST be:\n"
-            "     | Parameter | Product Label Value | BIS Desirable Limit | BIS Permissible Limit | Compliance Status |\n"
-            "   - For parameters present on the product label (e.g. TDS: 180 mg/l, Calcium: 25 mg/l, Magnesium: 35 mg/l, Chloride: 10 mg/l):\n"
-            "     Show the exact **Product Label Value** in bold (e.g., **180 mg/l**).\n"
-            "   - For standard BIS parameters not printed on the product label (e.g. pH, Color, Turbidity), write `Not Listed on Label` under Product Label Value.\n"
-            "   - DO NOT output `N/A` for parameters that WERE extracted from the label image or user text!\n"
-            "3. **What is Good vs What Needs Attention**: Use bullet points to highlight **What is Good** (*compliant/healthy parameters*) and **What Needs Attention** (*parameters exceeding limits or missing attributes*).\n"
-            "4. **Everyday Language & Rich Formatting**: Use **bold** for key metrics and *italics* for important notes or warnings. Keep explanations clear and consumer-friendly.\n"
+            "1. **Summary & Verdict**: Start with a clear 1-2 sentence summary.\n"
+            "2. **Comparison Tables / Details**: If analyzing product data or tool results (labs, hallmark), format them in a markdown table or structured bullet points.\n"
+            "3. **Everyday Language**: Keep explanations clear, professional, and practical.\n"
         )
 
         if request.simplify:
@@ -170,16 +313,13 @@ async def chat(request: ChatRequest):
 
         system_prompt += f"You MUST write your entire response strictly in the following language: {request.language}."
 
-
-        
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Context:\n{context_text}\n\nUser Query: {search_query}"}
         ]
 
-
-        # Call Groq LLM with model fallbacks
-        models_to_try = ["llama-3.3-70b-versatile", "qwen/qwen3.8-27b", "groq/compound"]
+        # 5. Call Groq with Function Calling / Tool Use
+        models_to_try = ["qwen/qwen3.8-27b", "qwen/qwen3.6-27b", "groq/compound"]
         chat_completion = None
         last_err = None
 
@@ -188,6 +328,8 @@ async def chat(request: ChatRequest):
                 chat_completion = groq_client.chat.completions.create(
                     messages=messages,
                     model=model_name,
+                    tools=tools,
+                    tool_choice="auto",
                     temperature=0.2,
                 )
                 break
@@ -198,12 +340,87 @@ async def chat(request: ChatRequest):
         if not chat_completion:
             raise last_err
 
-        
-        # 5. Format Response
-        answer = chat_completion.choices[0].message.content
-        formatted_sources = [{"document": s["metadata"]["source"], "page": s["metadata"]["page"], "content_snippet": s["content"][:200]} for s in sources]
-        
-        return {"answer": answer, "sources": formatted_sources}
+        response_message = chat_completion.choices[0].message
+
+        # Check if the LLM decided to invoke autonomous tools
+        if response_message.tool_calls:
+            print("Agentic Tool Calls Triggered:", response_message.tool_calls)
+            
+            # Append assistant's tool invocation proposal to messages
+            messages.append(response_message)
+
+            for tool_call in response_message.tool_calls:
+                func_name = tool_call.function.name
+                tool_call_id = tool_call.id
+                
+                try:
+                    args = json.loads(tool_call.function.arguments)
+                except Exception:
+                    args = {}
+
+                tool_result = {}
+                
+                if func_name == "search_testing_labs":
+                    state = args.get("state", "Delhi")
+                    category = args.get("product_category", "Water")
+                    try:
+                        tool_result = search_testing_labs(state=state, product_category=category)
+                    except Exception as ex:
+                        tool_result = {"error": str(ex)}
+                    actions_taken.append(f"Queried BIS Testing Lab Database for '{state}' ({category})")
+
+                elif func_name == "verify_hallmark":
+                    huid = args.get("huid", "AB1234")
+                    try:
+                        tool_result = verify_hallmark(huid=huid)
+                    except Exception as ex:
+                        tool_result = {"error": str(ex)}
+                    actions_taken.append(f"Verified BIS Hallmark Code '{huid}'")
+
+                # Append tool execution result back to messages
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call_id,
+                    "name": func_name,
+                    "content": json.dumps(tool_result)
+                })
+
+            # Make 2nd Groq call to synthesize final user answer using tool outputs
+            second_completion = None
+            for model_name in models_to_try:
+                try:
+                    second_completion = groq_client.chat.completions.create(
+                        messages=messages,
+                        model=model_name,
+                        temperature=0.2,
+                    )
+                    break
+                except Exception:
+                    continue
+
+            if second_completion:
+                answer = second_completion.choices[0].message.content
+            else:
+                answer = response_message.content or "Tool execution completed."
+        else:
+            answer = response_message.content or "No response generated."
+
+        # Format sources
+        formatted_sources = [
+            {
+                "document": s["metadata"]["source"], 
+                "page": s["metadata"]["page"], 
+                "content_snippet": s["content"][:200]
+            } 
+            for s in sources
+        ] if sources else []
+
+        return {
+            "answer": answer, 
+            "sources": formatted_sources,
+            "actions_taken": actions_taken
+        }
         
     except Exception as e:
+        print(f"Chat API Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -77,12 +77,20 @@ export default function ChatInterface() {
       const data = await res.json();
       
       if (res.ok) {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.answer, sources: data.sources }]);
+        setMessages((prev) => [
+          ...prev, 
+          { 
+            role: "assistant", 
+            content: data.answer, 
+            sources: data.sources,
+            actions_taken: data.actions_taken || []
+          }
+        ]);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [] }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [] }]);
       }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [] }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [], actions_taken: [] }]);
     } finally {
       setIsLoading(false);
     }
@@ -90,8 +98,8 @@ export default function ChatInterface() {
 
   const starterPrompts = [
     "What are the permissible limits for lead in drinking water as per IS 10500?",
-    "Explain the BIS certification process for MSMEs.",
-    "What are the rules for Gold Hallmarking in India?"
+    "Find me a water testing lab in Delhi",
+    "Check hallmark ID AB1234"
   ];
 
   // Fee calculation logic
@@ -236,6 +244,20 @@ export default function ChatInterface() {
                   )}
                   {msg.role === "assistant" ? (
                     <div className="prose prose-sm max-w-none text-gray-700">
+                      {/* Phase 7 Agentic Action Pills */}
+                      {msg.actions_taken && msg.actions_taken.length > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          {msg.actions_taken.map((action, i) => (
+                            <div 
+                              key={i} 
+                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 border border-amber-300 rounded-full text-xs font-semibold shadow-sm"
+                            >
+                              <span className="text-amber-600">⚙️</span>
+                              <span>Action: {action}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
