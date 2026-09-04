@@ -612,7 +612,7 @@ async def chat(request: ChatRequest):
                 continue
 
         if not chat_completion:
-            raise last_err
+            raise last_err or HTTPException(status_code=500, detail="Groq model API call failed.")
 
         response_message = chat_completion.choices[0].message
 

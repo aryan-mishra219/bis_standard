@@ -343,6 +343,7 @@ export default function ChatInterface() {
                             ))}
                           </div>
                         </div>
+                      )}
                       {/* Phase 9 Proactive Compliance Gap Report Banner & Card */}
                       {msg.compliance_report && (
                         <div className="mt-5 mb-4 p-5 bg-gradient-to-br from-slate-900 to-[#003366] text-white rounded-xl shadow-lg border border-blue-900">
