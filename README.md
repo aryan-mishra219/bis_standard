@@ -62,8 +62,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ---
 
-## ⭐ Phase 5, 6, 7 & 8 Hackathon "Wow" Features
+## ⭐ Phase 5, 6, 7, 8 & 9 Hackathon "Wow" Features
 
+- **🛡️ Proactive Compliance Gap Analyzer & PDF Report Generator (Phase 9)**:
+  - **`run_compliance_gap_analysis`**: Converts the assistant from a reactive chatbot to a proactive compliance advisor. Evaluates product specs, identifies mandatory IS standards, Quality Control Orders (QCO/CRS), missing certifications, risk levels, and calculates enterprise cost/timeline estimates.
+  - **📄 Downloadable PDF Report Endpoint (`GET /api/download-report/{id}`)**: Generates branded, official PDF compliance reports on the fly using `reportlab` with downloadable action buttons directly in the chat UI.
 - **📍 Dynamic UI Navigators (Phase 8 Process Timelines)**:
   - **`generate_process_timeline`**: Autonomously parses complex procedural queries (e.g. "What are the steps to apply for a BIS hallmark license?") into visual, numbered vertical step-by-step timelines in the chat UI.
 - **🤖 Autonomous Agentic Tool / Function Calling (Phase 7)**:
