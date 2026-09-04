@@ -112,14 +112,15 @@ export default function ChatInterface() {
             role: "assistant", 
             content: data.answer, 
             sources: data.sources,
-            actions_taken: data.actions_taken || []
+            actions_taken: data.actions_taken || [],
+            process_timeline: data.process_timeline || null
           }
         ]);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [] }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [], process_timeline: null }]);
       }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [], actions_taken: [] }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please ensure the Python backend is running on port 8000.", sources: [], actions_taken: [], process_timeline: null }]);
     } finally {
       setIsLoading(false);
     }
@@ -311,6 +312,37 @@ export default function ChatInterface() {
                       >
                         {msg.content}
                       </ReactMarkdown>
+
+                      {/* Phase 8 Dynamic Process Timeline Navigator */}
+                      {msg.process_timeline && msg.process_timeline.length > 0 && (
+                        <div className="mt-5 mb-4 p-5 bg-gradient-to-br from-blue-50/90 to-indigo-50/70 border border-blue-200 rounded-xl shadow-sm">
+                          <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-[#0055A4]">
+                            <span className="text-base">📍</span>
+                            <span>Interactive Process Navigator ({msg.process_timeline.length} Sequential Steps)</span>
+                          </div>
+
+                          <div className="relative pl-7 border-l-2 border-[#0055A4]/40 space-y-6 my-2">
+                            {msg.process_timeline.map((step, idx) => (
+                              <div key={idx} className="relative group">
+                                {/* Numbered Step Circle */}
+                                <div className="absolute -left-[41px] top-0 w-7 h-7 rounded-full bg-[#0055A4] text-white text-xs font-bold flex items-center justify-center shadow-md ring-4 ring-white group-hover:scale-110 transition-transform">
+                                  {step.step_number || idx + 1}
+                                </div>
+
+                                {/* Step Title & Description */}
+                                <div className="bg-white/95 p-3.5 rounded-lg border border-blue-100 shadow-sm hover:border-blue-300 transition-all">
+                                  <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                    {step.title}
+                                  </h4>
+                                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                                    {step.description}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       
                       {msg.sources && msg.sources.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-gray-100">

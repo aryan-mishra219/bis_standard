@@ -53,6 +53,7 @@ class ChatResponse(BaseModel):
     answer: str
     sources: list[dict]
     actions_taken: list[str] = []
+    process_timeline: list[dict] | None = None
 
 def cosine_similarity(v1, v2):
     return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
@@ -204,6 +205,37 @@ tools = [
                 "required": ["huid"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_process_timeline",
+            "description": "Call this tool whenever the user asks for a process, procedure, application steps, workflow, or how-to guide related to BIS certification or licensing (e.g. steps to apply for a hallmark license, BIS certification process for MSMEs). It visually renders an interactive step-by-step process timeline for the user.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "description": "Sequential step-by-step instructions for the requested procedure.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "description": "Short, clear title for this step."
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "Detailed explanation of what needs to be completed in this step."
+                                }
+                            },
+                            "required": ["title", "description"]
+                        }
+                    }
+                },
+                "required": ["steps"]
+            }
+        }
     }
 ]
 
@@ -217,6 +249,7 @@ async def chat(request: ChatRequest):
     try:
         search_query = request.query
         actions_taken = []
+        process_timeline = None
 
         # 0. Vision OCR processing if image_base64 is provided
         if request.image_base64:
@@ -378,6 +411,21 @@ async def chat(request: ChatRequest):
                         tool_result = {"error": str(ex)}
                     actions_taken.append(f"Verified BIS Hallmark Code '{huid}'")
 
+                elif func_name == "generate_process_timeline":
+                    raw_steps = args.get("steps", [])
+                    timeline_items = []
+                    for idx, s in enumerate(raw_steps):
+                        if isinstance(s, dict) and "title" in s and "description" in s:
+                            timeline_items.append({
+                                "step_number": idx + 1,
+                                "title": s["title"],
+                                "description": s["description"]
+                            })
+                    if timeline_items:
+                        process_timeline = timeline_items
+                        actions_taken.append(f"Generated Interactive Process Timeline ({len(timeline_items)} Steps)")
+                    tool_result = {"status": "Timeline generated successfully", "total_steps": len(timeline_items)}
+
                 # Append tool execution result back to messages
                 messages.append({
                     "role": "tool",
@@ -419,7 +467,8 @@ async def chat(request: ChatRequest):
         return {
             "answer": answer, 
             "sources": formatted_sources,
-            "actions_taken": actions_taken
+            "actions_taken": actions_taken,
+            "process_timeline": process_timeline
         }
         
     except Exception as e:
