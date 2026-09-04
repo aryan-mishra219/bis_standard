@@ -25,9 +25,23 @@ app.add_middleware(
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+
+def init_supabase():
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return None
+    if "your_supabase" in SUPABASE_URL.lower() or "your_supabase" in SUPABASE_KEY.lower():
+        return None
+    if not SUPABASE_URL.startswith("http://") and not SUPABASE_URL.startswith("https://"):
+        return None
+    try:
+        return create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception:
+        return None
+
+supabase: Client = init_supabase()
+
 
 class ChatRequest(BaseModel):
     query: str
@@ -94,11 +108,26 @@ async def chat(request: ChatRequest):
             {"role": "user", "content": f"Context:\n{context_text}\n\nUser Query: {request.query}"}
         ]
 
-        chat_completion = groq_client.chat.completions.create(
-            messages=messages,
-            model="llama-3.3-70b-versatile",
-            temperature=0.2,
-        )
+        # Call Groq LLM with model fallbacks
+        models_to_try = ["llama-3.3-70b-versatile", "qwen/qwen3.8-27b", "groq/compound"]
+        chat_completion = None
+        last_err = None
+
+        for model_name in models_to_try:
+            try:
+                chat_completion = groq_client.chat.completions.create(
+                    messages=messages,
+                    model=model_name,
+                    temperature=0.2,
+                )
+                break
+            except Exception as err:
+                last_err = err
+                continue
+
+        if not chat_completion:
+            raise last_err
+
         
         # 5. Format Response
         answer = chat_completion.choices[0].message.content
