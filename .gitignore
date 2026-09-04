@@ -21,3 +21,4 @@ venv/
 # Antigravity / System logs
 .system_generated/
 scratch/
+backend/data/processed_chunks.json
