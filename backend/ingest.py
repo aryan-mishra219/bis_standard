@@ -19,29 +19,48 @@ print(f"Loading FastEmbed model ({MODEL_NAME})...")
 embedding_model = TextEmbedding(model_name=MODEL_NAME)
 
 
-def extract_text_from_pdf(pdf_path: str):
-    """Extract text page by page from a PDF file using PyMuPDF."""
-    doc = pymupdf.open(pdf_path)
+def extract_text_from_file(file_path: str):
+    """Extract text from a PDF, Markdown, or Text file."""
+    ext = Path(file_path).suffix.lower()
+    filename = Path(file_path).name
 
-    pages_content = []
-    filename = Path(pdf_path).name
-
-    for page_num in range(len(doc)):
-        page = doc.load_page(page_num)
-        text = page.get_text("text").strip()
+    if ext == ".pdf":
+        doc = pymupdf.open(file_path)
+        pages_content = []
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            text = page.get_text("text").strip()
+            if text:
+                pages_content.append(
+                    {
+                        "text": text,
+                        "metadata": {
+                            "source": filename,
+                            "page": page_num + 1,
+                            "total_pages": len(doc),
+                        },
+                    }
+                )
+        doc.close()
+        return pages_content
+    elif ext in [".md", ".txt"]:
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read().strip()
         if text:
-            pages_content.append(
+            return [
                 {
                     "text": text,
                     "metadata": {
                         "source": filename,
-                        "page": page_num + 1,
-                        "total_pages": len(doc),
+                        "page": 1,
+                        "total_pages": 1,
                     },
                 }
-            )
-    doc.close()
-    return pages_content
+            ]
+        return []
+    else:
+        print(f"Unsupported file extension: {ext}")
+        return []
 
 
 def chunk_extracted_pages(pages_content, chunk_size=1000, chunk_overlap=200):
@@ -151,18 +170,18 @@ def store_chunks(chunks, embeddings, output_dir="data"):
     return False
 
 
-def process_pdf(pdf_path: str):
-    """Execute full pipeline: PDF -> Extract -> Chunk -> Embed -> Store."""
-    print(f"\n--- Processing PDF: {pdf_path} ---")
-    if not os.path.exists(pdf_path):
-        print(f"Error: File '{pdf_path}' not found.")
+def process_file(file_path: str):
+    """Execute full pipeline: File -> Extract -> Chunk -> Embed -> Store."""
+    print(f"\n--- Processing File: {file_path} ---")
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found.")
         return
 
-    pages = extract_text_from_pdf(pdf_path)
-    print(f"Extracted text from {len(pages)} page(s).")
+    pages = extract_text_from_file(file_path)
+    print(f"Extracted text from {len(pages)} section(s)/page(s).")
 
     if not pages:
-        print("No readable text extracted from PDF.")
+        print("No readable text extracted from file.")
         return
 
     chunks = chunk_extracted_pages(pages)
@@ -173,34 +192,39 @@ def process_pdf(pdf_path: str):
 
 
 def process_directory(dir_path: str):
-    """Process all PDF files in a directory."""
-    pdf_files = list(Path(dir_path).glob("*.pdf"))
-    if not pdf_files:
-        print(f"No PDF files found in directory: '{dir_path}'")
+    """Process all PDF, MD, and TXT files in a directory."""
+    files = (
+        list(Path(dir_path).glob("*.pdf"))
+        + list(Path(dir_path).glob("*.md"))
+        + list(Path(dir_path).glob("*.txt"))
+    )
+    if not files:
+        print(f"No PDF/MD/TXT files found in directory: '{dir_path}'")
         return
 
-    print(f"Found {len(pdf_files)} PDF file(s) in '{dir_path}'.")
-    for pdf_file in pdf_files:
-        process_pdf(str(pdf_file))
+    print(f"Found {len(files)} file(s) in '{dir_path}'.")
+    for f in files:
+        process_file(str(f))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="BIS Standards PDF Ingestion & Embedding Pipeline"
+        description="BIS Standards Document Ingestion & Embedding Pipeline"
     )
     parser.add_argument(
-        "--file", type=str, help="Path to a single PDF file to process"
+        "--file", type=str, help="Path to a single PDF/MD/TXT file to process"
     )
     parser.add_argument(
         "--dir",
         type=str,
         default="data",
-        help="Directory containing PDF files (default: 'data')",
+        help="Directory containing documents (default: 'data')",
     )
 
     args = parser.parse_args()
 
     if args.file:
-        process_pdf(args.file)
+        process_file(args.file)
     else:
         process_directory(args.dir)
+
