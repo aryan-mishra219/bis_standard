@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Next.js build & cache
+.next/
+out/
+
+# Environment files
+.env
+.env*.local
+*.env
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# Antigravity / System logs
+.system_generated/
+scratch/
