@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "M.A.N.A.K — BIS Standards AI Assistant",
+  title: "P.R.A.M.A.A.N — BIS Standards & Compliance AI Platform",
   description:
-    "Multilingual AI Assistant for National Accreditation & Knowledge. Verify BIS standards, audit product compliance, and navigate Indian certification.",
+    "Platform for Regulatory And Marking Authenticity Across Nation. Verify BIS standards, audit product compliance, calculate fees, and navigate Indian certification.",
 };
 
 export const viewport = {

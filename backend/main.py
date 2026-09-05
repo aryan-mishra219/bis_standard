@@ -371,11 +371,11 @@ def build_fee_quotation_pdf_bytes(q: dict) -> bytes:
         textColor=colors.HexColor("#1F2937")
     )
     
-    qid = f"MANAK-FEE-{random.randint(100000, 999999)}"
+    qid = f"PRAMAAN-FEE-{random.randint(100000, 999999)}"
     
     story.append(Paragraph("<b>BUREAU OF INDIAN STANDARDS (BIS)</b>", title_style))
-    story.append(Paragraph("<b>M.A.N.A.K Regulatory Compliance & Statutory Fee Quotation</b>", ParagraphStyle('M', parent=title_style, fontSize=11, leading=14, textColor=colors.HexColor("#1F2937"))))
-    story.append(Paragraph(f"Official Estimate ID: <b>{qid}</b> &nbsp;|&nbsp; Generated via M.A.N.A.K Regulatory Portal &nbsp;|&nbsp; Gazette Schedule 2026", sub_title))
+    story.append(Paragraph("<b>P.R.A.M.A.A.N Regulatory Compliance & Statutory Fee Quotation</b>", ParagraphStyle('M', parent=title_style, fontSize=11, leading=14, textColor=colors.HexColor("#1F2937"))))
+    story.append(Paragraph(f"Official Estimate ID: <b>{qid}</b> &nbsp;|&nbsp; Generated via P.R.A.M.A.A.N Regulatory Platform &nbsp;|&nbsp; Gazette Schedule 2026", sub_title))
     story.append(Spacer(1, 6))
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#0055A4"), spaceAfter=8))
     

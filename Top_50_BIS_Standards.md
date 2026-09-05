@@ -1,4 +1,4 @@
-# M.A.N.A.K — BIS Indian Standards Technical Reference Corpus (v1)
+# P.R.A.M.A.A.N — BIS Indian Standards Technical Reference Corpus (v1)
 **Purpose:** Source-grounded RAG ingestion document covering the Top 50 Indian Standards across 10 product categories.
 **Methodology note (read before ingesting):** Every fact below is either (a) drawn from a cited public source — BIS circulars, PIB releases, gazette QCOs, or verified secondary technical references — or (b) explicitly marked `[Verify against official IS document]` where the exact clause number or numeric limit sits behind BIS's paid standard document and could not be confirmed from public sources. **Do not let the LLM "fill in" the flagged fields during embedding or generation — treat the flag itself as retrievable content**, so the assistant tells the user "this exact figure needs verification from the official IS document" instead of guessing.
 

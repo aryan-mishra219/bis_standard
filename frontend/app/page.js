@@ -352,7 +352,7 @@ export default function ChatInterface() {
         setMessages((prev) => [...prev, { role: "assistant", content: data.detail || "Server Error: Could not fetch response.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
       }
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error: Unable to reach M.A.N.A.K backend.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Network error: Unable to reach P.R.A.M.A.A.N backend.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
     } finally { setIsLoading(false); }
   };
 
@@ -483,7 +483,7 @@ export default function ChatInterface() {
           <div className="flex items-center gap-2.5">
             <img src="/bis-logo.png" alt="BIS" className="w-9 h-9 rounded-lg object-contain shrink-0 bg-white p-0.5" />
             <div className="min-w-0">
-              <h1 className="text-[13px] font-bold text-white tracking-tight leading-none">M.A.N.A.K</h1>
+              <h1 className="text-[13px] font-bold text-white tracking-tight leading-none">P.R.A.M.A.A.N</h1>
               <p className="text-[10px] text-slate-500 mt-0.5 leading-none">Bureau of Indian Standards</p>
             </div>
           </div>
@@ -527,7 +527,7 @@ export default function ChatInterface() {
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-2 min-w-0">
             <img src="/bis-logo.png" alt="BIS" className="w-7 h-7 rounded-md object-contain shrink-0 bg-white p-0.5" />
-            <span className="text-sm font-semibold text-gray-900 truncate">M.A.N.A.K</span>
+            <span className="text-sm font-semibold text-gray-900 truncate">P.R.A.M.A.A.N</span>
           </div>
 
           {/* Tabs */}
@@ -1142,7 +1142,7 @@ export default function ChatInterface() {
             </div>
 
             <p className="text-center text-[9px] text-gray-400 leading-tight">
-              M.A.N.A.K is an official AI agent under Bureau of Indian Standards, verified against gazetted <span className="font-medium">National Register</span> — <span className="font-semibold text-gray-500">1805 IS &middot; 11,400+</span>
+              P.R.A.M.A.A.N is an official AI agent under Bureau of Indian Standards, verified against gazetted <span className="font-medium">National Register</span> — <span className="font-semibold text-gray-500">1805 IS &middot; 11,400+</span>
             </p>
           </div>
         </footer>

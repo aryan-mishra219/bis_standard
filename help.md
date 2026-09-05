@@ -1,6 +1,6 @@
-# 📘 User & Judge Navigation Guide: M.A.N.A.K
+# 📘 User & Judge Navigation Guide: P.R.A.M.A.A.N
 
-**M.A.N.A.K** (*Multilingual Assistant for National Accreditation and Knowledge*) is an AI-powered full-stack platform engineered for the Bureau of Indian Standards (BIS). It bridges the gap between complex regulatory documentation and everyday consumers, startups, and MSMEs.
+**P.R.A.M.A.A.N** (*Platform for Regulatory And Marking Authenticity Across Nation*) is an AI-powered full-stack platform engineered for the Bureau of Indian Standards (BIS). It bridges the gap between complex regulatory documentation and everyday consumers, startups, and MSMEs.
 
 ---
 
@@ -11,7 +11,7 @@ When you open the web application at `http://localhost:3000`, the user interface
 ### 🔵 Top Navigation Header
 Located at the top of the interface, the header provides instant access to global configuration tools:
 
-1. **BIS Brand Logo & Title**: Displays the official M.A.N.A.K identity.
+1. **BIS Brand Logo & Title**: Displays the official P.R.A.M.A.A.N identity.
 2. **ELI5 (Simplify) Toggle Switch**:
    - **What it does**: Toggles "Explain Like I'm 5" mode.
    - **How to use**: Click the checkbox. When enabled, the AI translates complex technical jargon into simple, real-world analogies suitable for a 5th grader.

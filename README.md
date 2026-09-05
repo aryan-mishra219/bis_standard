@@ -1,6 +1,6 @@
-# M.A.N.A.K (Multilingual Assistant for National Accreditation and Knowledge)
+# P.R.A.M.A.A.N (Platform for Regulatory And Marking Authenticity Across Nation)
 
-An intelligent assistant application built for Indian Standards (BIS) compliance, documentation, and query processing.
+An intelligent full-stack AI platform built for the Bureau of Indian Standards (BIS) compliance, regulatory feasibility, itemized fee quotation generation, and automated documentation analysis.
 
 ---
 
