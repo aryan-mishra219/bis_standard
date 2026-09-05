@@ -303,6 +303,181 @@ def build_pdf_report_bytes(report_data: dict) -> bytes:
     return buffer.getvalue()
 
 
+class FeeQuotationRequest(BaseModel):
+    product_name: str = "Packaged Drinking Water (IS 14543)"
+    standard_code: str = "IS 14543:2024"
+    scheme_type: str = "Scheme-I (ISI Mark)"
+    track: str = "Simplified Fast-Track"
+    enterprise_scale: str = "Micro / Startup"
+    special_category: str = "Standard"
+    annual_volume: int = 250000
+    volume_unit: str = "Bottles / Year"
+    application_fee: int = 1000
+    inspection_fee: int = 7000
+    lab_testing_fee: int = 18000
+    base_marking_fee: int = 45000
+    discount_marking_amount: int = 36000
+    net_marking_fee: int = 9000
+    subtotal: int = 35000
+    gst_amount: int = 6300
+    total_payable: int = 41300
+    in_house_lab_capex: str = "₹1,50,000 - ₹3,50,000"
+    estimated_timeline: str = "30 - 45 Days"
+
+
+def build_fee_quotation_pdf_bytes(q: dict) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=36,
+        bottomMargin=36
+    )
+    story = []
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'QuotationTitle',
+        parent=styles['Heading1'],
+        fontSize=15,
+        leading=18,
+        textColor=colors.HexColor("#0055A4"),
+        alignment=1
+    )
+    sub_title = ParagraphStyle(
+        'QuotationSubTitle',
+        parent=styles['Normal'],
+        fontSize=8.5,
+        leading=11,
+        textColor=colors.HexColor("#4B5563"),
+        alignment=1
+    )
+    h2_style = ParagraphStyle(
+        'QuotationH2',
+        parent=styles['Heading2'],
+        fontSize=10,
+        leading=13,
+        textColor=colors.HexColor("#1E3A8A"),
+        spaceBefore=8,
+        spaceAfter=4
+    )
+    body_style = ParagraphStyle(
+        'QuotationBody',
+        parent=styles['Normal'],
+        fontSize=8,
+        leading=10.5,
+        textColor=colors.HexColor("#1F2937")
+    )
+    
+    qid = f"MANAK-FEE-{random.randint(100000, 999999)}"
+    
+    story.append(Paragraph("<b>BUREAU OF INDIAN STANDARDS (BIS)</b>", title_style))
+    story.append(Paragraph("<b>M.A.N.A.K Regulatory Compliance & Statutory Fee Quotation</b>", ParagraphStyle('M', parent=title_style, fontSize=11, leading=14, textColor=colors.HexColor("#1F2937"))))
+    story.append(Paragraph(f"Official Estimate ID: <b>{qid}</b> &nbsp;|&nbsp; Generated via M.A.N.A.K Regulatory Portal &nbsp;|&nbsp; Gazette Schedule 2026", sub_title))
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#0055A4"), spaceAfter=8))
+    
+    # 1. Project & Applicant Summary
+    story.append(Paragraph("<b>1. Certification Scope & Applicant Profile</b>", h2_style))
+    scope_data = [
+        ["Product / Scope:", q.get("product_name", "Packaged Drinking Water"), "Applicable Standard:", q.get("standard_code", "IS 14543:2024")],
+        ["Certification Scheme:", q.get("scheme_type", "Scheme-I (ISI Mark)"), "Procedure Track:", q.get("track", "Simplified Fast-Track")],
+        ["Enterprise Scale:", q.get("enterprise_scale", "Micro / Startup"), "Special Subsidies:", q.get("special_category", "Standard")],
+        ["Estimated Annual Volume:", f"{q.get('annual_volume', 0):,} {q.get('volume_unit', 'Units')}", "Estimated Time-to-Grant:", q.get("estimated_timeline", "30-45 Days")]
+    ]
+    t_scope = Table(scope_data, colWidths=[125, 145, 125, 145])
+    t_scope.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+        ('FONTNAME', (2,0), (2,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#334155")),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+    ]))
+    story.append(t_scope)
+    story.append(Spacer(1, 8))
+    
+    # 2. Itemized Statutory Fee Table
+    story.append(Paragraph("<b>2. Itemized Statutory Fee Schedule (Payable to Bureau of Indian Standards)</b>", h2_style))
+    fee_data = [
+        ["Cost Component", "Statutory Description", "Amount (INR)"],
+        ["1. Application Processing Fee", "One-time non-refundable statutory filing fee", f"₹{q.get('application_fee', 1000):,}"],
+        ["2. Factory Audit & Inspection", "Auditor man-days fee for technical plant verification", f"₹{q.get('inspection_fee', 7000):,}"],
+        ["3. Independent Lab Sample Testing", "NABL/BIS testing for initial type test compliance", f"₹{q.get('lab_testing_fee', 18000):,}"],
+        ["4. Annual Minimum Marking Fee", "Base statutory marking fee before MSME subsidies", f"₹{q.get('base_marking_fee', 45000):,}"],
+        ["   Less: MSME / Startup Concession", f"Official Government subsidy for {q.get('enterprise_scale', 'Micro')}", f"-₹{q.get('discount_marking_amount', 0):,}"],
+        ["   Net Annual Marking Fee", "Statutory marking fee payable for the first year", f"₹{q.get('net_marking_fee', 9000):,}"],
+        ["Statutory Subtotal (excl. GST)", "Sum of application, inspection, testing & net marking fee", f"₹{q.get('subtotal', 35000):,}"],
+        ["Statutory GST (18.0%)", "Goods & Services Tax on certification services", f"₹{q.get('gst_amount', 6300):,}"],
+        ["TOTAL ESTIMATED OUTFLOW", "Total initial statutory investment payable to BIS", f"₹{q.get('total_payable', 41300):,}"]
+    ]
+    t_fee = Table(fee_data, colWidths=[160, 260, 120])
+    t_fee.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#0055A4")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 8),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E1")),
+        ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,1), (-1,-1), 7.5),
+        ('BACKGROUND', (0,5), (-1,5), colors.HexColor("#F0FDF4")),
+        ('TEXTCOLOR', (2,5), (2,5), colors.HexColor("#16A34A")),
+        ('FONTNAME', (0,5), (-1,5), 'Helvetica-Bold'),
+        ('BACKGROUND', (0,-3), (-1,-1), colors.HexColor("#F1F5F9")),
+        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#EFF6FF")),
+        ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
+        ('TEXTCOLOR', (0,-1), (-1,-1), colors.HexColor("#0055A4")),
+        ('FONTSIZE', (0,-1), (-1,-1), 8.5),
+        ('TOPPADDING', (0,0), (-1,-1), 2.5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
+    ]))
+    story.append(t_fee)
+    story.append(Spacer(1, 8))
+    
+    # 3. In-House Plant Testing Equipment & Capex
+    story.append(Paragraph("<b>3. In-House Quality Testing Facilities (Required for Plant Approval)</b>", h2_style))
+    story.append(Paragraph(f"To obtain an ISI Mark, manufacturer must install mandatory in-house testing facilities. Estimated Capex: <b>{q.get('in_house_lab_capex', '₹1,50,000 - ₹3,50,000')}</b>.", body_style))
+    story.append(Spacer(1, 4))
+    
+    # 4. Mandatory Document Checklist
+    story.append(Paragraph("<b>4. Mandatory Documents Checklist for Manakonline Submission</b>", h2_style))
+    docs_data = [
+        ["• Udyam Registration / DPIIT Startup Certificate", "• Factory Premises Lease Deed / Ownership Proof"],
+        ["• Plant Layout & Machinery List with Capacity", "• In-House Lab Testing Equipment & Calibration Slips"],
+        ["• Qualified Technical QC In-Charge Appointment Letter", "• Raw Material Test Certificates & Manufacturing SOP"]
+    ]
+    t_docs = Table(docs_data, colWidths=[270, 270])
+    t_docs.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 7),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#374151")),
+        ('TOPPADDING', (0,0), (-1,-1), 1.5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 1.5),
+    ]))
+    story.append(t_docs)
+    story.append(Spacer(1, 8))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#94A3B8"), spaceAfter=4))
+    story.append(Paragraph("<i>Note: This document is an estimate generated according to BIS (Conformity Assessment) Regulations 2026. Actual lab fees may vary slightly based on testing parameters. Submit applications directly via manakonline.in.</i>", ParagraphStyle('F', parent=body_style, fontSize=6.5, leading=8.5, textColor=colors.HexColor("#6B7280"))))
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+@app.post("/api/generate-fee-quotation")
+def generate_fee_quotation(request: FeeQuotationRequest):
+    pdf_bytes = build_fee_quotation_pdf_bytes(request.dict())
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=BIS_Statutory_Fee_Quotation_{request.standard_code.replace(':', '_')}.pdf"}
+    )
+
+
 @app.get("/api/download-report/{report_id}")
 def download_report(report_id: str):
     report_data = REPORTS_CACHE.get(report_id)

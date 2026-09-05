@@ -74,6 +74,183 @@ const strategyPortals = [
 
 
 
+/* ─── Product Sectors & BIS Standards Dataset ─── */
+const productSectors = [
+  {
+    id: "water",
+    name: "Packaged Drinking Water",
+    standard: "IS 14543:2024 / IS 10500",
+    scheme: "Scheme-I (ISI Mark)",
+    baseMarkingFee: 45000,
+    unitRate: 0.02,
+    minVolume: 50000,
+    maxVolume: 1500000,
+    stepVolume: 50000,
+    defaultVolume: 250000,
+    unitName: "Bottles / Year",
+    labFee: 18000,
+    inspectionDays: 2,
+    inHouseCapex: "₹1.5L - ₹3.5L",
+    keyEquipment: [
+      { name: "Laminar Air Flow Cabinet (Class 100)", cost: "₹45,000" },
+      { name: "Autoclave & Bacteriological Incubator", cost: "₹35,000" },
+      { name: "Digital TDS & pH Meter (0.01 accuracy)", cost: "₹12,000" },
+      { name: "Turbidity Meter & Spectrophotometer", cost: "₹55,000" },
+    ],
+    checklist: [
+      "FSSAI Manufacturing License (Mandatory testing compliance)",
+      "Groundwater Extraction NOC from CGWA / State Authority",
+      "Factory Premises Lease / Title Deed & Layout Plan",
+      "Qualified Microbiologist / Chemist Appointment Letter",
+      "In-House Test Equipment Calibration Records"
+    ]
+  },
+  {
+    id: "led",
+    name: "LED Lighting & Self-Ballasted Lamps",
+    standard: "IS 16102 (Part 1 & 2)",
+    scheme: "Scheme-II (CRS Registration)",
+    baseMarkingFee: 55000,
+    unitRate: 0.15,
+    minVolume: 20000,
+    maxVolume: 1000000,
+    stepVolume: 20000,
+    defaultVolume: 100000,
+    unitName: "Pieces / Year",
+    labFee: 32000,
+    inspectionDays: 1,
+    inHouseCapex: "₹2.0L - ₹5.0L",
+    keyEquipment: [
+      { name: "Integrating Sphere & Spectroradiometer", cost: "₹1,20,000" },
+      { name: "Electrical Safety & Surge Immunity Tester", cost: "₹65,000" },
+      { name: "High Voltage (Hipot) & Insulation Tester", cost: "₹35,000" },
+      { name: "Digital Power & Harmonics Analyzer", cost: "₹45,000" },
+    ],
+    checklist: [
+      "DPIIT / Udyam MSME Registration Certificate",
+      "Factory Machinery & SMT / Assembly Line Inventory",
+      "Authorized Indian Representative (AIR) for Foreign Makers",
+      "NABL Accredited Safety & EMC Test Report",
+      "PCB Layout & Bill of Materials (BOM) Declaration"
+    ]
+  },
+  {
+    id: "steel",
+    name: "Steel TMT Rebars for Construction",
+    standard: "IS 1786:2008 (Fe 500D)",
+    scheme: "Scheme-I (Mandatory ISI Mark)",
+    baseMarkingFee: 85000,
+    unitRate: 12.0,
+    minVolume: 500,
+    maxVolume: 25000,
+    stepVolume: 500,
+    defaultVolume: 2500,
+    unitName: "Metric Tonnes / Year",
+    labFee: 45000,
+    inspectionDays: 2,
+    inHouseCapex: "₹5.0L - ₹12.0L",
+    keyEquipment: [
+      { name: "Universal Tensile Machine (UTM - 1000 kN)", cost: "₹4,50,000" },
+      { name: "Optical Emission Spectrometer (OES for Chemistry)", cost: "₹3,80,000" },
+      { name: "Cold Bend & Re-Bend Testing Fixture", cost: "₹65,000" },
+      { name: "Digital Extensometer & Proof Stress Gauge", cost: "₹45,000" },
+    ],
+    checklist: [
+      "Induction Furnace / Re-rolling Mill Pollution Clearance (CTO)",
+      "Plant Machinery Capacity & Quality Plan (STI)",
+      "Metallurgical Lab In-Charge Credentials",
+      "Raw Material (Billet/Ingot) Test Certificates",
+      "Calibration of Load Cell & Temperature Sensors"
+    ]
+  },
+  {
+    id: "toys",
+    name: "Electric & Non-Electric Toys",
+    standard: "IS 9873 (Parts 1-9) & IS 15644",
+    scheme: "Scheme-I (Toys QCO 2020)",
+    baseMarkingFee: 38000,
+    unitRate: 0.25,
+    minVolume: 10000,
+    maxVolume: 500000,
+    stepVolume: 10000,
+    defaultVolume: 50000,
+    unitName: "Toys / Year",
+    labFee: 24000,
+    inspectionDays: 1,
+    inHouseCapex: "₹1.2L - ₹2.8L",
+    keyEquipment: [
+      { name: "Drop & Impact Test Rig (Sharp Edge/Point Tester)", cost: "₹38,000" },
+      { name: "Torque & Tension Gauge (Choking hazard tester)", cost: "₹28,000" },
+      { name: "Small Parts Gauge Cylinder", cost: "₹8,000" },
+      { name: "Flammability Test Chamber", cost: "₹45,000" },
+    ],
+    checklist: [
+      "Udyam MSME Certificate (Eligible for 80% rebate)",
+      "Toy Safety Assessment & Chemical Phthalate Test Reports",
+      "Factory Fire Safety Certificate & Premises Lease",
+      "Quality Control Plan (QCP) as per BIS Scheme-I",
+      "Traceability & Age-Grading Warning Label Designs"
+    ]
+  },
+  {
+    id: "hallmark",
+    name: "Gold & Silver Jewellery",
+    standard: "IS 1417 (Gold) / IS 2112 (Silver)",
+    scheme: "Assaying & Hallmarking Scheme",
+    baseMarkingFee: 15000,
+    unitRate: 45.0,
+    minVolume: 250,
+    maxVolume: 15000,
+    stepVolume: 250,
+    defaultVolume: 1000,
+    unitName: "Articles / Year",
+    labFee: 5000,
+    inspectionDays: 1,
+    inHouseCapex: "₹80k - ₹1.5L",
+    keyEquipment: [
+      { name: "X-Ray Fluorescence (XRF) Gold Analyzer", cost: "₹75,000" },
+      { name: "Electronic Micro-Balance (0.01 mg precision)", cost: "₹25,000" },
+      { name: "10x Aplanatic Triplet Loupe & Optical Scope", cost: "₹6,000" },
+    ],
+    checklist: [
+      "GST Registration Certificate of Jeweller Outlet / Workshop",
+      "Proof of Registered Business Premises & Trade License",
+      "Signatory Authority / Owner KYC & Aadhaar / PAN",
+      "HUID Integration Registration on Manakonline Portal",
+      "Turnover Self-Declaration for Slabs"
+    ]
+  },
+  {
+    id: "ev",
+    name: "EV Battery Packs & Storage Cells",
+    standard: "IS 16046 (Part 2) / IS 17855",
+    scheme: "Scheme-II (CRS Registration)",
+    baseMarkingFee: 65000,
+    unitRate: 20.0,
+    minVolume: 500,
+    maxVolume: 25000,
+    stepVolume: 500,
+    defaultVolume: 3000,
+    unitName: "Battery Packs / Year",
+    labFee: 60000,
+    inspectionDays: 1,
+    inHouseCapex: "₹4.0L - ₹9.0L",
+    keyEquipment: [
+      { name: "Multi-Channel Battery Pack Cycler & Load Bank", cost: "₹2,50,000" },
+      { name: "Thermal Runaway & Temperature Chamber", cost: "₹1,80,000" },
+      { name: "Short-Circuit & Overcharge Safety Tester", cost: "₹95,000" },
+      { name: "Internal Resistance & BMS Diagnostic Rig", cost: "₹65,000" },
+    ],
+    checklist: [
+      "Automotive Research Association / NABL Test Certificate",
+      "BMS Firmware Safety & Cell Chemistry Datasheets",
+      "Factory Flame-Proof Storage & Assembly Layout",
+      "ISO 9001 Quality Management System Certificate",
+      "Cell Traceability & QR Code Implementation Plan"
+    ]
+  }
+];
+
 const actionTabs = [
   { icon: Icons.flask, label: "Lab Test" },
   { icon: Icons.doc, label: "BIS Audit" },
@@ -181,13 +358,92 @@ export default function ChatInterface() {
 
   const handleFeedback = (idx, type) => setFeedbackState((prev) => ({ ...prev, [idx]: type }));
 
-  /* ─── Fee Calc ─── */
-  const baseFee = 100000;
-  let discountPercent = 0;
-  if (enterpriseType === "Small") discountPercent = 50;
-  else if (enterpriseType === "Micro/Startup") discountPercent = 80;
-  const finalFee = baseFee * (1 - discountPercent / 100);
-  const savings = baseFee - finalFee;
+  /* ─── State for Enhanced Fee Estimator ─── */
+  const [calculatorTab, setCalculatorTab] = useState("fee"); // 'fee' | 'capex' | 'checklist'
+  const [selectedSectorId, setSelectedSectorId] = useState("water");
+  const [applicationTrack, setApplicationTrack] = useState("simplified"); // 'simplified' | 'normal'
+  const [isSpecialCategory, setIsSpecialCategory] = useState(false); // Women/SC-ST/NER
+  const [productionVolume, setProductionVolume] = useState(250000);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [checkedChecklist, setCheckedChecklist] = useState({});
+
+  const currentSector = productSectors.find((s) => s.id === selectedSectorId) || productSectors[0];
+
+  const handleSectorChange = (sectorId) => {
+    setSelectedSectorId(sectorId);
+    const sec = productSectors.find((s) => s.id === sectorId);
+    if (sec) setProductionVolume(sec.defaultVolume);
+  };
+
+  /* ─── Dynamic Regulatory Fee Calculations ─── */
+  const variableMarkingFee = Number(productionVolume) * currentSector.unitRate;
+  const grossMarkingFee = Math.max(currentSector.baseMarkingFee, variableMarkingFee);
+  
+  let baseConcessionPct = 0;
+  if (enterpriseType === "Small") baseConcessionPct = 50;
+  else if (enterpriseType === "Micro/Startup") baseConcessionPct = 80;
+  
+  const effectiveConcessionPct = isSpecialCategory ? Math.min(90, baseConcessionPct + 10) : baseConcessionPct;
+  const markingDiscountAmount = (grossMarkingFee * effectiveConcessionPct) / 100;
+  const netMarkingFee = grossMarkingFee - markingDiscountAmount;
+
+  const inspectionFee = (applicationTrack === "simplified" ? 1 : currentSector.inspectionDays) * 7000;
+  const effectiveLabFee = enterpriseType === "Micro/Startup" ? currentSector.labFee * 0.5 : currentSector.labFee;
+  const applicationFee = 1000;
+
+  const subtotal = applicationFee + inspectionFee + effectiveLabFee + netMarkingFee;
+  const gstAmount = Math.round(subtotal * 0.18);
+  const totalPayable = subtotal + gstAmount;
+  const totalSavings = markingDiscountAmount + (currentSector.labFee - effectiveLabFee);
+
+  const downloadQuotationPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      const payload = {
+        product_name: currentSector.name,
+        standard_code: currentSector.standard,
+        scheme_type: currentSector.scheme,
+        track: applicationTrack === "simplified" ? "Simplified Fast-Track (30 Days)" : "Normal Inspection Procedure (60-90 Days)",
+        enterprise_scale: enterpriseType,
+        special_category: isSpecialCategory ? "Women/SC-ST/NER (+10% Rebate)" : "Standard",
+        annual_volume: Number(productionVolume),
+        volume_unit: currentSector.unitName,
+        application_fee: applicationFee,
+        inspection_fee: inspectionFee,
+        lab_testing_fee: Math.round(effectiveLabFee),
+        base_marking_fee: Math.round(grossMarkingFee),
+        discount_marking_amount: Math.round(markingDiscountAmount),
+        net_marking_fee: Math.round(netMarkingFee),
+        subtotal: Math.round(subtotal),
+        gst_amount: Math.round(gstAmount),
+        total_payable: Math.round(totalPayable),
+        in_house_lab_capex: currentSector.inHouseCapex,
+        estimated_timeline: applicationTrack === "simplified" ? "30 - 45 Days" : "60 - 90 Days"
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/generate-fee-quotation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("PDF generation endpoint returned non-200");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `BIS_Statutory_Quotation_${currentSector.id.toUpperCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF Download error:", err);
+      alert("Could not generate PDF quotation. Please make sure the backend is running.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const starterPrompts = [
     { icon: Icons.flask, text: "Audit my product spec sheet for bottled drinking water plant" },
@@ -521,49 +777,318 @@ export default function ChatInterface() {
             )}
           </main>
 
-          {/* ═══ Fee Panel ═══ */}
+          {/* ═══ Industry-Grade BIS Fee & Feasibility Estimator Panel ═══ */}
           <AnimatePresence>
             {showFeePanel && (
               <motion.aside
-                initial={{ width: 0, opacity: 0 }} animate={{ width: 280, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 380, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
                 transition={panelSpring}
-                className="hidden md:flex flex-col shrink-0 border-l border-gray-200 bg-white overflow-hidden"
+                className="fixed inset-y-0 right-0 z-50 md:relative md:z-auto md:flex flex-col shrink-0 border-l border-gray-200 bg-white overflow-hidden shadow-xl md:shadow-none"
               >
-                <div className="p-4 space-y-4 w-70">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">{Icons.tag} MSME Fee Calculator</h3>
-                    <button onClick={() => setShowFeePanel(false)} className="p-1 hover:bg-gray-100 rounded transition-colors text-gray-400">{Icons.close}</button>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Enterprise Scale</label>
-                      <select value={enterpriseType} onChange={(e) => setEnterpriseType(e.target.value)} className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-800 rounded-lg p-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 focus:border-[#0055A4] cursor-pointer">
-                        <option value="Large">Large Enterprise (0% Off)</option>
-                        <option value="Small">Small Enterprise (50% Off)</option>
-                        <option value="Micro/Startup">Micro / Startup (80% Off)</option>
-                      </select>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center space-y-1">
-                      <div className="text-[9px] text-gray-500 uppercase font-semibold tracking-wider">Estimated Marking Fee</div>
-                      <div className="text-2xl font-extrabold text-gray-900">₹{finalFee.toLocaleString("en-IN")}</div>
-                      {discountPercent > 0 && (
-                        <>
-                          <div className="text-xs text-gray-400 line-through">₹{baseFee.toLocaleString("en-IN")}</div>
-                          <div className="text-[10px] font-semibold text-emerald-600">Save ₹{savings.toLocaleString("en-IN")} ({discountPercent}% Off)</div>
-                        </>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-gray-500 space-y-1.5">
-                      <div className="flex justify-between"><span>Base Marking Fee:</span><span className="font-medium text-gray-700">₹1,00,000</span></div>
-                      <div className="flex justify-between"><span>MSME Concession:</span><span className="font-medium text-emerald-600">-{discountPercent}%</span></div>
-                      <div className="flex justify-between"><span>Application + Inspection:</span><span className="font-medium text-gray-700">₹11,000</span></div>
-                      <div className="border-t border-gray-200 pt-1.5 flex justify-between font-semibold text-gray-900 text-[11px]">
-                        <span>Total Payable to BIS:</span>
-                        <span>₹{(finalFee + 11000).toLocaleString("en-IN")}</span>
+                <div className="flex flex-col h-full w-[380px]">
+                  
+                  {/* Panel Header */}
+                  <div className="p-3.5 border-b border-gray-200 bg-slate-50 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 bg-[#0055A4] text-white rounded-lg">{Icons.calculator}</span>
+                      <div>
+                        <h3 className="text-xs font-bold text-gray-900 leading-tight">BIS Feasibility & Cost Estimator</h3>
+                        <p className="text-[10px] text-gray-500">Gazette Schedule & Subsidy Calculator</p>
                       </div>
                     </div>
-                    <button className="w-full py-2 bg-[#0055A4] hover:bg-[#003d7a] text-white rounded-lg text-[11px] font-semibold transition-colors">Apply Concession on Manakonline</button>
+                    <button onClick={() => setShowFeePanel(false)} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-gray-600">{Icons.close}</button>
                   </div>
+
+                  {/* Panel Tabs */}
+                  <div className="px-3 pt-2.5 pb-1 border-b border-gray-100 flex gap-1 bg-white shrink-0">
+                    {[
+                      { id: "fee", label: "Fee Schedule", icon: Icons.tag },
+                      { id: "capex", label: "Lab Capex", icon: Icons.flask },
+                      { id: "checklist", label: "Checklist", icon: Icons.check }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setCalculatorTab(tab.id)}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold rounded-lg transition-colors ${
+                          calculatorTab === tab.id
+                            ? "bg-[#0055A4] text-white shadow-xs"
+                            : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        <span className="opacity-80">{tab.icon}</span>
+                        <span>{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Panel Body */}
+                  <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 text-xs text-gray-700">
+
+                    {/* ═══ TAB 1: Statutory Fee Calculator ═══ */}
+                    {calculatorTab === "fee" && (
+                      <div className="space-y-3">
+
+                        {/* Product Sector */}
+                        <div>
+                          <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Product Sector & Standard</label>
+                          <select
+                            value={selectedSectorId}
+                            onChange={(e) => handleSectorChange(e.target.value)}
+                            className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-900 rounded-lg p-2 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 focus:border-[#0055A4] cursor-pointer"
+                          >
+                            {productSectors.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.name} ({s.standard})
+                              </option>
+                            ))}
+                          </select>
+                          <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500 px-0.5">
+                            <span className="font-semibold text-blue-700">{currentSector.standard}</span>
+                            <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-medium">{currentSector.scheme}</span>
+                          </div>
+                        </div>
+
+                        {/* Procedure Track & Enterprise Scale in Grid */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Procedure Track</label>
+                            <select
+                              value={applicationTrack}
+                              onChange={(e) => setApplicationTrack(e.target.value)}
+                              className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-800 rounded-lg p-2 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer"
+                            >
+                              <option value="simplified">Simplified (30 Days)</option>
+                              <option value="normal">Normal (60-90 Days)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Enterprise Scale</label>
+                            <select
+                              value={enterpriseType}
+                              onChange={(e) => setEnterpriseType(e.target.value)}
+                              className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-800 rounded-lg p-2 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer"
+                            >
+                              <option value="Micro/Startup">Micro / Startup (80% Off)</option>
+                              <option value="Small">Small (50% Off)</option>
+                              <option value="Large">Large Enterprise (0%)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Special Concession Toggle */}
+                        <label className="flex items-center gap-2 p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={isSpecialCategory}
+                            onChange={(e) => setIsSpecialCategory(e.target.checked)}
+                            className="accent-[#0055A4] w-3.5 h-3.5 rounded cursor-pointer shrink-0"
+                          />
+                          <div className="text-[11px] text-amber-900 leading-tight">
+                            <span className="font-bold">Women / SC-ST / NER Unit</span>
+                            <span className="text-[10px] text-amber-700 block">+10% additional statutory rebate</span>
+                          </div>
+                        </label>
+
+                        {/* Annual Production Volume Slider */}
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span className="font-semibold text-slate-700">Estimated Annual Volume</span>
+                            <span className="font-bold text-[#0055A4]">{Number(productionVolume).toLocaleString("en-IN")} <span className="text-[10px] text-slate-500 font-normal">{currentSector.unitName}</span></span>
+                          </div>
+                          <input
+                            type="range"
+                            min={currentSector.minVolume}
+                            max={currentSector.maxVolume}
+                            step={currentSector.stepVolume}
+                            value={productionVolume}
+                            onChange={(e) => setProductionVolume(Number(e.target.value))}
+                            className="w-full accent-[#0055A4] cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+                          />
+                          <div className="flex justify-between text-[9px] text-slate-400">
+                            <span>Min: {currentSector.minVolume.toLocaleString("en-IN")}</span>
+                            <span>Rate: ₹{currentSector.unitRate} / unit</span>
+                            <span>Max: {currentSector.maxVolume.toLocaleString("en-IN")}</span>
+                          </div>
+                        </div>
+
+                        {/* Total Outflow Hero Card */}
+                        <div className="bg-[#0f172a] text-white rounded-xl p-3.5 text-center space-y-1 shadow-sm">
+                          <div className="text-[9px] text-slate-400 uppercase font-semibold tracking-wider">Estimated Total Statutory Outflow (incl. 18% GST)</div>
+                          <div className="text-2xl font-black tracking-tight text-white">₹{totalPayable.toLocaleString("en-IN")}</div>
+                          {totalSavings > 0 && (
+                            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                              <span>Total Subsidies Saved: ₹{totalSavings.toLocaleString("en-IN")} ({effectiveConcessionPct}% Off)</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Detailed Itemized Breakdown */}
+                        <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                          <div className="px-3 py-1.5 bg-slate-100 border-b border-gray-200 text-[10px] font-bold uppercase tracking-wider text-slate-600 flex justify-between">
+                            <span>Cost Head (Statutory)</span>
+                            <span>Amount</span>
+                          </div>
+                          <div className="p-2.5 space-y-1.5 text-[11px]">
+                            <div className="flex justify-between text-gray-600">
+                              <span>1. Application Filing Fee:</span>
+                              <span className="font-semibold text-gray-900">₹{applicationFee.toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                              <span>2. Factory Audit Fee ({applicationTrack === "simplified" ? "1 Day" : `${currentSector.inspectionDays} Days`}):</span>
+                              <span className="font-semibold text-gray-900">₹{inspectionFee.toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                              <span>3. NABL Sample Testing Fee:</span>
+                              <span className="font-semibold text-gray-900">₹{Math.round(effectiveLabFee).toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                              <span>4. Annual Marking Fee (Gross):</span>
+                              <span className="font-medium text-gray-700">₹{Math.round(grossMarkingFee).toLocaleString("en-IN")}</span>
+                            </div>
+                            {markingDiscountAmount > 0 && (
+                              <div className="flex justify-between text-emerald-600 font-semibold pl-2">
+                                <span>↳ MSME/Startup Concession (-{effectiveConcessionPct}%):</span>
+                                <span>-₹{Math.round(markingDiscountAmount).toLocaleString("en-IN")}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between text-slate-800 font-medium pl-2">
+                              <span>↳ Net Annual Marking Fee:</span>
+                              <span className="font-semibold">₹{Math.round(netMarkingFee).toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="border-t border-gray-100 pt-1.5 flex justify-between text-gray-600">
+                              <span>Statutory Subtotal:</span>
+                              <span className="font-semibold text-gray-800">₹{subtotal.toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-500 text-[10px]">
+                              <span>Statutory GST (18.0%):</span>
+                              <span>₹{gstAmount.toLocaleString("en-IN")}</span>
+                            </div>
+                            <div className="border-t border-gray-200 pt-1.5 flex justify-between font-bold text-gray-900 text-xs">
+                              <span>Net Total Payable to BIS:</span>
+                              <span className="text-[#0055A4]">₹{totalPayable.toLocaleString("en-IN")}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="space-y-2 pt-1">
+                          <button
+                            onClick={downloadQuotationPdf}
+                            disabled={isDownloadingPdf}
+                            className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                          >
+                            {isDownloadingPdf ? (
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <span>Generating PDF Quotation...</span>
+                              </div>
+                            ) : (
+                              <>
+                                {Icons.download}
+                                <span>Download Official Fee Quotation (PDF)</span>
+                              </>
+                            )}
+                          </button>
+
+                          <a
+                            href="https://www.manakonline.in"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1.5 border border-slate-200"
+                          >
+                            <span>Apply on Manakonline Portal</span>
+                            <span className="text-slate-400">↗</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ TAB 2: In-House Lab Capex ═══ */}
+                    {calculatorTab === "capex" && (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                          <div className="font-bold text-blue-900 text-xs flex items-center gap-1.5 mb-1">
+                            <span>{Icons.flask}</span>
+                            <span>Mandatory In-House Testing Setup</span>
+                          </div>
+                          <p className="text-[11px] text-blue-700 leading-relaxed">
+                            Under BIS Scheme-I (STI - Scheme of Testing & Inspection), plants must maintain on-site laboratory facilities to obtain license approval.
+                          </p>
+                          <div className="mt-2 pt-2 border-t border-blue-200/60 flex justify-between items-center text-xs">
+                            <span className="font-semibold text-blue-900">Estimated Capex Budget:</span>
+                            <span className="font-extrabold text-[#0055A4]">{currentSector.inHouseCapex}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Required Quality Testing Apparatus for {currentSector.name}</h4>
+                          <div className="space-y-1.5">
+                            {currentSector.keyEquipment.map((eq, i) => (
+                              <div key={i} className="p-2.5 bg-white border border-gray-200 rounded-lg flex items-center justify-between hover:border-gray-300 transition-colors">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                                  <span className="text-[11px] font-medium text-gray-800 leading-tight">{eq.name}</span>
+                                </div>
+                                <span className="font-semibold text-slate-700 text-[11px] shrink-0 ml-2">{eq.cost}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] text-slate-500 space-y-1">
+                          <div className="font-semibold text-slate-700">Calibration Requirement:</div>
+                          <p>All load cells, pressure gauges, incubators, and analytical balances must possess valid NABL Calibration Certificates during the BIS Officer audit.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ TAB 3: Document Checklist ═══ */}
+                    {calculatorTab === "checklist" && (
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center pb-1 border-b border-gray-100">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Statutory Documents Required</span>
+                          <span className="text-[10px] font-bold text-[#0055A4]">
+                            {Object.values(checkedChecklist).filter(Boolean).length} of {currentSector.checklist.length} Ready
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {currentSector.checklist.map((item, idx) => {
+                            const isDone = !!checkedChecklist[`${selectedSectorId}_${idx}`];
+                            return (
+                              <label
+                                key={idx}
+                                className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
+                                  isDone
+                                    ? "bg-emerald-50/80 border-emerald-200 text-emerald-900"
+                                    : "bg-white border-gray-200 hover:bg-slate-50 text-gray-700"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isDone}
+                                  onChange={(e) => setCheckedChecklist((prev) => ({ ...prev, [`${selectedSectorId}_${idx}`]: e.target.checked }))}
+                                  className="accent-emerald-600 w-4 h-4 rounded mt-0.5 shrink-0 cursor-pointer"
+                                />
+                                <span className={`text-[11px] leading-snug ${isDone ? "line-through opacity-80" : ""}`}>
+                                  {item}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+
+                        <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[10px] text-amber-900 space-y-1">
+                          <span className="font-bold flex items-center gap-1">{Icons.alert} Verification Tip</span>
+                          <p>Upload self-attested colored PDF scans on Manakonline. Applications with missing calibration records face a standard 15-day objection delay.</p>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+
                 </div>
               </motion.aside>
             )}
