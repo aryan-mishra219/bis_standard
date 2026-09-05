@@ -667,10 +667,10 @@ export default function LabLocatorPage() {
         scrollWheelZoom: true
       });
 
-      // Add CartoDB Positron / OSM tiles for crisp modern look
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: "abcd",
+      // Standard OpenStreetMap public tiles — 100% Free, No API Key, No Watermark
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+        subdomains: ["a", "b", "c"],
         maxZoom: 19
       }).addTo(map);
 
