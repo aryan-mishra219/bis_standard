@@ -507,6 +507,8 @@ export default function ChatInterface() {
                   setShowFeePanel(!showFeePanel);
                 } else if (p.id === "lab") {
                   window.location.href = "/labs";
+                } else if (p.id === "hallmark") {
+                  window.location.href = "/hallmark";
                 } else {
                   handleSend(`Open ${p.label}`);
                 }
@@ -519,6 +521,11 @@ export default function ChatInterface() {
               {p.id === "lab" && (
                 <span className="ml-auto text-[9px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.2 rounded">
                   MAP
+                </span>
+              )}
+              {p.id === "hallmark" && (
+                <span className="ml-auto text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.2 rounded">
+                  HUID
                 </span>
               )}
             </button>
