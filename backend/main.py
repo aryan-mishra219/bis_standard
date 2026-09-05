@@ -534,6 +534,7 @@ async def chat(request: ChatRequest):
                             }
                         ],
                         temperature=0.1,
+                        max_tokens=600,
                         timeout=25
                     )
                     extracted_text = vision_completion.choices[0].message.content.strip()
@@ -630,11 +631,12 @@ async def chat(request: ChatRequest):
         ]
 
         # 5. Call Groq with Function Calling / Tool Use
-        models_to_try = ["qwen/qwen3.8-27b", "qwen/qwen3.6-27b", "groq/compound"]
+        # Note: Only models that support function/tool calling must be used here
+        tool_capable_models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.6-27b"]
         chat_completion = None
         last_err = None
 
-        for model_name in models_to_try:
+        for model_name in tool_capable_models:
             try:
                 chat_completion = groq_client.chat.completions.create(
                     messages=messages,
@@ -642,11 +644,29 @@ async def chat(request: ChatRequest):
                     tools=tools,
                     tool_choice="auto",
                     temperature=0.2,
+                    max_tokens=1500,
                 )
                 break
             except Exception as err:
+                print(f"Tool calling with '{model_name}' failed: {err}")
                 last_err = err
                 continue
+
+        # If all tool-calling attempts failed, fall back to standard completion without tools
+        if not chat_completion:
+            fallback_models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.6-27b", "groq/compound"]
+            for f_model in fallback_models:
+                try:
+                    chat_completion = groq_client.chat.completions.create(
+                        messages=messages,
+                        model=f_model,
+                        temperature=0.2,
+                        max_tokens=1500,
+                    )
+                    break
+                except Exception as f_err:
+                    last_err = f_err
+                    continue
 
         if not chat_completion:
             raise last_err or HTTPException(status_code=500, detail="Groq model API call failed.")
@@ -727,15 +747,17 @@ async def chat(request: ChatRequest):
                 })
 
             second_completion = None
-            for model_name in models_to_try:
+            for model_name in tool_capable_models:
                 try:
                     second_completion = groq_client.chat.completions.create(
                         messages=messages,
                         model=model_name,
                         temperature=0.2,
+                        max_tokens=1500,
                     )
                     break
-                except Exception:
+                except Exception as s_err:
+                    print(f"Second completion with '{model_name}' failed: {s_err}")
                     continue
 
             if second_completion:
