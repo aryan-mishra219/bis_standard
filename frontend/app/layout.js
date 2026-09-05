@@ -17,14 +17,18 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0f172a",
+  themeColor: "#0055A4",
 };
+
+import { ThemeProvider } from "./context/ThemeContext";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full flex flex-col font-[family-name:var(--font-inter)] antialiased bg-[#f8fafc]">
-        {children}
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full`}>
+      <body className="min-h-full flex flex-col font-(family-name:--font-inter) antialiased bg-[#f8fafc] dark:bg-[#0b0f19] dark:text-[#f8fafc] transition-colors duration-200">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

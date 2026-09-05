@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useMemo } from "react";
 import Link from "next/link";
+import ThemeToggle from "../components/ThemeToggle";
+import CustomSelect from "../components/CustomSelect";
 
 // ─── PROFESSIONAL SVG ICONS (NO EMOJIS) ───
 const Icons = {
@@ -372,15 +374,15 @@ export default function HallmarkPage() {
   }, [jewellerQuery]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-[#f8fafc] flex flex-col font-sans transition-colors duration-200">
       
       {/* ─── TOP HEADER ─── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+      <header className="bg-white dark:bg-[#0f172a]/90 dark:backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-xs font-semibold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 transition-colors"
+              className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -388,20 +390,20 @@ export default function HallmarkPage() {
               <span>Back to Assistant</span>
             </Link>
 
-            <div className="h-5 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
 
             <div className="flex items-center gap-3">
-              <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain bg-slate-50 p-0.5 border border-slate-200" />
+              <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain bg-slate-50 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">
+                  <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
                     P.R.A.M.A.A.N Hallmark Verifier
                   </h1>
-                  <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  <span className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                     HUID & IS 1417
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 hidden md:block">
+                <p className="text-xs text-slate-500 dark:text-slate-400 hidden md:block">
                   National Gold & Silver Purity Authenticity Verification System
                 </p>
               </div>
@@ -409,23 +411,24 @@ export default function HallmarkPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600">
+            <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span><strong>Central BIS Registry</strong>: Connected</span>
             </div>
             <Link
               href="/labs"
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition flex items-center gap-1.5"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition flex items-center gap-1.5"
             >
               {Icons.building}
               <span>Assaying Labs (AHC)</span>
             </Link>
+            <ThemeToggle showLabel={false} />
           </div>
         </div>
       </header>
 
       {/* ─── NAVIGATION TABS ─── */}
-      <nav className="bg-white border-b border-slate-200 shadow-xs">
+      <nav className="bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 no-scrollbar">
             {[
@@ -437,10 +440,10 @@ export default function HallmarkPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 whitespace-nowrap ${
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                   activeTab === tab.id
-                    ? "bg-[#0055A4] text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "bg-[#0055A4] dark:bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <span className="opacity-80">{tab.icon}</span>
@@ -459,16 +462,16 @@ export default function HallmarkPage() {
           <div className="space-y-6">
             
             {/* HUID Input Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs">
               <div className="max-w-2xl mx-auto text-center space-y-3">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 text-xs font-semibold">
                   {Icons.certificate}
                   <span>6-Digit Alphanumeric Hallmark Identification</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                   Verify Gold & Silver Hallmarking Authenticity
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
                   Enter the 6-character laser-engraved HUID stamped on your jewellery along with the BIS Standard Mark and Purity Grade.
                 </p>
 
@@ -483,7 +486,7 @@ export default function HallmarkPage() {
                       value={char}
                       onChange={(e) => handleCharChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-mono font-bold uppercase rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-900 focus:border-[#0055A4] focus:ring-4 focus:ring-blue-100 outline-none transition"
+                      className="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-mono font-bold uppercase rounded-xl bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-[#0055A4] dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 outline-none transition"
                     />
                   ))}
                 </div>
@@ -493,7 +496,7 @@ export default function HallmarkPage() {
                   <button
                     onClick={() => handleVerify()}
                     disabled={isVerifying}
-                    className="px-6 py-2.5 rounded-xl bg-[#0055A4] hover:bg-[#003d7a] text-white font-semibold text-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="px-6 py-2.5 rounded-xl bg-[#0055A4] dark:bg-blue-600 hover:bg-[#003d7a] dark:hover:bg-blue-700 text-white font-semibold text-xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     {isVerifying ? (
                       <>
@@ -510,13 +513,13 @@ export default function HallmarkPage() {
                 </div>
 
                 {/* Sample Test HUID Pills */}
-                <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-2 text-xs">
-                  <span className="text-slate-400 font-semibold uppercase text-[10px]">Demo HUID Records:</span>
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-center gap-2 text-xs">
+                  <span className="text-slate-400 dark:text-slate-500 font-semibold uppercase text-[10px]">Demo HUID Records:</span>
                   {SAMPLE_HUIDS.map((code) => (
                     <button
                       key={code}
                       onClick={() => handleSelectSample(code)}
-                      className="font-mono font-semibold px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition"
+                      className="font-mono font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
                     >
                       {code}
                     </button>
@@ -527,41 +530,41 @@ export default function HallmarkPage() {
 
             {/* Verification Result Card */}
             {verifiedRecord && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 relative overflow-hidden">
-                <div className="h-1.5 bg-[#0055A4] absolute top-0 left-0 right-0"></div>
+              <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 relative overflow-hidden">
+                <div className="h-1.5 bg-[#0055A4] dark:bg-blue-500 absolute top-0 left-0 right-0"></div>
 
                 {/* Header Banner */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                         {verifiedRecord.statusLabel}
                       </span>
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
-                      HUID: <span className="font-mono text-[#0055A4]">{verifiedRecord.huid}</span>
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                      HUID: <span className="font-mono text-[#0055A4] dark:text-blue-400">{verifiedRecord.huid}</span>
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Statutory Standard: <strong className="text-slate-800">{verifiedRecord.standard}</strong>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Statutory Standard: <strong className="text-slate-800 dark:text-slate-200">{verifiedRecord.standard}</strong>
                     </p>
                   </div>
 
                   {/* Stamp Illustration Box */}
-                  <div className="bg-slate-50 border border-slate-300 rounded-xl p-3 flex items-center gap-4">
+                  <div className="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl p-3 flex items-center gap-4">
                     <div className="text-center px-1">
                       <div className="flex items-center justify-center">{Icons.bisLogoTriangle}</div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">BIS Mark</div>
+                      <div className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-0.5">BIS Mark</div>
                     </div>
-                    <div className="h-8 w-px bg-slate-300"></div>
+                    <div className="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
                     <div className="text-center px-1">
-                      <div className="text-sm font-bold text-slate-900 font-mono">{verifiedRecord.purityGrade}</div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">Fineness</div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white font-mono">{verifiedRecord.purityGrade}</div>
+                      <div className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-0.5">Fineness</div>
                     </div>
-                    <div className="h-8 w-px bg-slate-300"></div>
+                    <div className="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
                     <div className="text-center px-1">
-                      <div className="text-sm font-bold text-blue-900 font-mono">{verifiedRecord.huid}</div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">6-Digit HUID</div>
+                      <div className="text-sm font-bold text-blue-900 dark:text-blue-400 font-mono">{verifiedRecord.huid}</div>
+                      <div className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-0.5">6-Digit HUID</div>
                     </div>
                   </div>
                 </div>
@@ -571,85 +574,85 @@ export default function HallmarkPage() {
                   
                   {/* Left Column: Article & Metallurgical Specs */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                       {Icons.certificate}
                       <span>Precious Metal & Article Specifications</span>
                     </h4>
 
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs">
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">Article Category:</span>
-                        <span className="font-semibold text-slate-900">{verifiedRecord.articleType}</span>
+                    <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-2.5 text-xs">
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">Article Category:</span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{verifiedRecord.articleType}</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">Precious Metal:</span>
-                        <span className="font-semibold text-slate-900">{verifiedRecord.metal}</span>
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">Precious Metal:</span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{verifiedRecord.metal}</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">Certified Fineness:</span>
-                        <span className="font-bold text-emerald-700">{verifiedRecord.purityGrade} ({verifiedRecord.purityPercent} Pure)</span>
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">Certified Fineness:</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">{verifiedRecord.purityGrade} ({verifiedRecord.purityPercent} Pure)</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">Gross Weight:</span>
-                        <span className="font-mono font-semibold text-slate-900">{verifiedRecord.grossWeight}</span>
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">Gross Weight:</span>
+                        <span className="font-mono font-semibold text-slate-900 dark:text-white">{verifiedRecord.grossWeight}</span>
                       </div>
                       <div className="flex justify-between py-1">
-                        <span className="text-slate-500">Net Bullion Weight:</span>
-                        <span className="font-mono font-bold text-[#0055A4]">{verifiedRecord.netWeight}</span>
+                        <span className="text-slate-500 dark:text-slate-400">Net Bullion Weight:</span>
+                        <span className="font-mono font-bold text-[#0055A4] dark:text-blue-400">{verifiedRecord.netWeight}</span>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-[11px] text-slate-600 dark:text-slate-300">
                       <strong>Assay Testing Protocol:</strong> {verifiedRecord.testMethod}
                     </div>
                   </div>
 
                   {/* Right Column: Jeweller & AHC Traceability */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                       {Icons.building}
                       <span>Certified Jeweller & Assaying Centre (AHC)</span>
                     </h4>
 
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs">
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">Registered Jeweller:</span>
-                        <span className="font-semibold text-slate-900 text-right">{verifiedRecord.jewellerName}</span>
+                    <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-2.5 text-xs">
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">Registered Jeweller:</span>
+                        <span className="font-semibold text-slate-900 dark:text-white text-right">{verifiedRecord.jewellerName}</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">BIS License Number:</span>
-                        <span className="font-mono font-bold text-blue-700">{verifiedRecord.jewellerLicense}</span>
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">BIS License Number:</span>
+                        <span className="font-mono font-bold text-blue-700 dark:text-blue-400">{verifiedRecord.jewellerLicense}</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">Assaying Centre (AHC):</span>
-                        <span className="font-semibold text-slate-900 text-right">{verifiedRecord.ahcName}</span>
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">Assaying Centre (AHC):</span>
+                        <span className="font-semibold text-slate-900 dark:text-white text-right">{verifiedRecord.ahcName}</span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-200">
-                        <span className="text-slate-500">AHC Identification ID:</span>
-                        <span className="font-mono font-semibold text-slate-700">{verifiedRecord.ahcCode} ({verifiedRecord.ahcLocation})</span>
+                      <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400">AHC Identification ID:</span>
+                        <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{verifiedRecord.ahcCode} ({verifiedRecord.ahcLocation})</span>
                       </div>
                       <div className="flex justify-between py-1">
-                        <span className="text-slate-500">Hallmarking Timestamp:</span>
-                        <span className="font-mono font-semibold text-slate-900">{verifiedRecord.hallmarkingDate}</span>
+                        <span className="text-slate-500 dark:text-slate-400">Hallmarking Timestamp:</span>
+                        <span className="font-mono font-semibold text-slate-900 dark:text-white">{verifiedRecord.hallmarkingDate}</span>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 flex items-center gap-2">
-                      <span className="text-emerald-700">{Icons.checkCircle}</span>
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-[11px] text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+                      <span className="text-emerald-700 dark:text-emerald-400">{Icons.checkCircle}</span>
                       <span><strong>Verification Guarantee:</strong> This record is officially validated against the National BIS Manakonline HUID Database.</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Print & Action Bar */}
-                <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="text-xs text-slate-500">
-                    Verification Certificate Ref: <span className="font-mono font-semibold text-slate-700">{verifiedRecord.huid}-{Date.now().toString().slice(-6)}</span>
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Verification Certificate Ref: <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{verifiedRecord.huid}-892104</span>
                   </div>
                   <div className="flex gap-2 w-full sm:w-auto">
                     <button
                       onClick={() => window.print()}
-                      className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       {Icons.printer}
                       <span>Print Certificate Slip</span>
@@ -658,7 +661,7 @@ export default function HallmarkPage() {
                       href="https://www.manakonline.in"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg bg-[#0055A4] hover:bg-[#003d7a] text-white transition flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg bg-[#0055A4] dark:bg-blue-600 hover:bg-[#003d7a] dark:hover:bg-blue-700 text-white transition flex items-center justify-center gap-1.5"
                     >
                       <span>Manakonline Portal</span>
                       {Icons.externalLink}
@@ -670,18 +673,18 @@ export default function HallmarkPage() {
 
             {/* Not Found State */}
             {notFoundHuid && !verifiedRecord && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 rounded-2xl p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
                   {Icons.alertTriangle}
                 </div>
-                <h3 className="text-base font-bold text-red-900">HUID Code &ldquo;{notFoundHuid}&rdquo; Not Found</h3>
-                <p className="text-xs text-slate-600 max-w-md mx-auto">
+                <h3 className="text-base font-bold text-red-900 dark:text-red-300">HUID Code &ldquo;{notFoundHuid}&rdquo; Not Found</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
                   The entered 6-character code is not recognized in the active BIS registry. Ensure the code is correctly transcribed from the article stamp or visit an authorized AHC center.
                 </p>
                 <div className="pt-2">
                   <button
                     onClick={() => handleSelectSample("AZ89X2")}
-                    className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition"
+                    className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
                   >
                     Try Demo Code (AZ89X2)
                   </button>
@@ -694,16 +697,16 @@ export default function HallmarkPage() {
         {/* ═════════ TAB 2: KARAT MELT & VALUE CALCULATOR ═════════ */}
         {activeTab === "calculator" && (
           <div className="space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold mb-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 text-xs font-semibold mb-2">
                   {Icons.calculator}
                   <span>BIS IS 1417 & Bullion Pricing Formula</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   Karat Fineness & Intrinsic Valuation Calculator
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                   Calculate exact pure bullion net weight, alloy composition, craftsmanship charges, and statutory BIS hallmarking fees.
                 </p>
               </div>
@@ -712,25 +715,25 @@ export default function HallmarkPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                 
                 {/* Metal & Karat Selection */}
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Precious Metal</label>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-3">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Precious Metal</label>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setCalcMetal("gold")}
-                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                         calcMetal === "gold"
-                          ? "bg-[#0055A4] text-white shadow-xs"
-                          : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                          ? "bg-[#0055A4] dark:bg-blue-600 text-white shadow-xs"
+                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
                       }`}
                     >
                       Gold (IS 1417)
                     </button>
                     <button
                       onClick={() => setCalcMetal("silver")}
-                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                         calcMetal === "silver"
-                          ? "bg-[#0055A4] text-white shadow-xs"
-                          : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                          ? "bg-[#0055A4] dark:bg-blue-600 text-white shadow-xs"
+                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
                       }`}
                     >
                       Silver (IS 2112)
@@ -739,25 +742,28 @@ export default function HallmarkPage() {
 
                   {calcMetal === "gold" && (
                     <div className="pt-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Purity Grade (Karat)</label>
-                      <select
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Purity Grade (Karat)</label>
+                      <CustomSelect
                         value={calcKarat}
-                        onChange={(e) => setCalcKarat(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-[#0055A4]"
-                      >
-                        {Object.entries(karatPurities).map(([k, info]) => (
-                          <option key={k} value={k}>{info.name} — Stamp: {info.stamp}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setCalcKarat(Number(val))}
+                        options={Object.entries(karatPurities).map(([k, info]) => ({
+                          value: Number(k),
+                          label: `${info.name} (${k}K)`,
+                          subtitle: `Stamp: ${info.stamp} • ${info.purity}% pure`,
+                        }))}
+                        placeholder="Select Karat"
+                        size="md"
+                        ariaLabel="Purity Grade (Karat)"
+                      />
                     </div>
                   )}
                 </div>
 
                 {/* Article Weight Slider */}
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gross Weight</label>
-                    <span className="font-mono text-sm font-bold text-blue-800">{calcWeight} grams</span>
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Weight</label>
+                    <span className="font-mono text-sm font-bold text-blue-800 dark:text-blue-400">{calcWeight} grams</span>
                   </div>
                   <input
                     type="range"
@@ -766,9 +772,9 @@ export default function HallmarkPage() {
                     step="0.5"
                     value={calcWeight}
                     onChange={(e) => setCalcWeight(Number(e.target.value))}
-                    className="w-full accent-[#0055A4] cursor-pointer h-2 bg-slate-200 rounded-lg"
+                    className="w-full accent-[#0055A4] dark:accent-blue-500 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-400">
+                  <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500">
                     <span>0.5g (Ring)</span>
                     <span>50g (Necklace)</span>
                     <span>100g (Bar)</span>
@@ -776,39 +782,39 @@ export default function HallmarkPage() {
                 </div>
 
                 {/* Live Spot Rate Customizer */}
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-3">
                   {calcMetal === "gold" ? (
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">24K Bullion Spot (per 10g)</label>
-                        <span className="font-mono text-xs font-semibold text-slate-700">₹{goldSpotRate10g.toLocaleString("en-IN")}</span>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">24K Bullion Spot (per 10g)</label>
+                        <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">₹{goldSpotRate10g.toLocaleString("en-IN")}</span>
                       </div>
                       <input
                         type="number"
                         value={goldSpotRate10g}
                         onChange={(e) => setGoldSpotRate10g(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 outline-none focus:border-[#0055A4]"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white outline-none focus:border-[#0055A4] dark:focus:border-blue-500"
                       />
                     </div>
                   ) : (
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Silver 999 Spot (per 1 kg)</label>
-                        <span className="font-mono text-xs font-semibold text-slate-700">₹{silverSpotRate1kg.toLocaleString("en-IN")}</span>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Silver 999 Spot (per 1 kg)</label>
+                        <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">₹{silverSpotRate1kg.toLocaleString("en-IN")}</span>
                       </div>
                       <input
                         type="number"
                         value={silverSpotRate1kg}
                         onChange={(e) => setSilverSpotRate1kg(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 outline-none focus:border-[#0055A4]"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono font-semibold text-slate-900 dark:text-white outline-none focus:border-[#0055A4] dark:focus:border-blue-500"
                       />
                     </div>
                   )}
 
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Making Charges ({makingChargesPercent}%)</label>
-                      <span className="font-mono text-xs font-semibold text-slate-700">₹{estimatedMakingCharges.toLocaleString("en-IN")}</span>
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Making Charges ({makingChargesPercent}%)</label>
+                      <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">₹{estimatedMakingCharges.toLocaleString("en-IN")}</span>
                     </div>
                     <input
                       type="range"
@@ -817,7 +823,7 @@ export default function HallmarkPage() {
                       step="1"
                       value={makingChargesPercent}
                       onChange={(e) => setMakingChargesPercent(Number(e.target.value))}
-                      className="w-full accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+                      className="w-full accent-blue-600 dark:accent-blue-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
                     />
                   </div>
                 </div>
@@ -826,30 +832,30 @@ export default function HallmarkPage() {
               {/* Comprehensive Breakdown Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Pure Metal Content</span>
-                  <div className="text-xl font-bold text-slate-900 font-mono">{pureGoldGrams} g</div>
-                  <span className="text-[10px] text-slate-500 block">
+                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Pure Metal Content</span>
+                  <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">{pureGoldGrams} g</div>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
                     Alloy: {(calcWeight - Number(pureGoldGrams)).toFixed(3)}g
                   </span>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Intrinsic Bullion Value</span>
-                  <div className="text-xl font-bold text-slate-900 font-mono">₹{rawBullionValue.toLocaleString("en-IN")}</div>
-                  <span className="text-[10px] text-emerald-600 block font-medium">Excl. Making & Taxes</span>
+                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Intrinsic Bullion Value</span>
+                  <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">₹{rawBullionValue.toLocaleString("en-IN")}</div>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-medium">Excl. Making & Taxes</span>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Statutory Hallmark Fee</span>
-                  <div className="text-xl font-bold text-blue-700 font-mono">₹{statutoryHallmarkFee} <span className="text-xs text-slate-500 font-normal">/ piece</span></div>
-                  <span className="text-[10px] text-slate-500 block">BIS Regulated Cap</span>
+                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Statutory Hallmark Fee</span>
+                  <div className="text-xl font-bold text-blue-700 dark:text-blue-400 font-mono">₹{statutoryHallmarkFee} <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">/ piece</span></div>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block">BIS Regulated Cap</span>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-1">
-                  <span className="text-[10px] font-bold text-blue-900 uppercase">Estimated Total Retail</span>
-                  <div className="text-xl font-bold text-blue-900 font-mono">₹{grandTotalEstimate.toLocaleString("en-IN")}</div>
-                  <span className="text-[10px] text-blue-700 block">Incl. 3% GST (₹{estimatedGst})</span>
+                <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/60 rounded-xl p-4 space-y-1">
+                  <span className="text-[10px] font-bold text-blue-900 dark:text-blue-300 uppercase">Estimated Total Retail</span>
+                  <div className="text-xl font-bold text-blue-900 dark:text-blue-200 font-mono">₹{grandTotalEstimate.toLocaleString("en-IN")}</div>
+                  <span className="text-[10px] text-blue-700 dark:text-blue-400 block">Incl. 3% GST (₹{estimatedGst})</span>
                 </div>
               </div>
             </div>
@@ -859,11 +865,11 @@ export default function HallmarkPage() {
         {/* ═════════ TAB 3: REGISTERED JEWELLER DIRECTORY ═════════ */}
         {activeTab === "directory" && (
           <div className="space-y-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">BIS Certified Jeweller Registry</h3>
-                  <p className="text-xs text-slate-500">Directory of licensed jeweller entities authorized to sell hallmarked precious articles under BIS Scheme-I.</p>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">BIS Certified Jeweller Registry</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Directory of licensed jeweller entities authorized to sell hallmarked precious articles under BIS Scheme-I.</p>
                 </div>
                 <div className="w-full md:w-72 relative">
                   <input
@@ -871,16 +877,16 @@ export default function HallmarkPage() {
                     value={jewellerQuery}
                     onChange={(e) => setJewellerQuery(e.target.value)}
                     placeholder="Search by Jeweller, CM/L, City..."
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-4 py-2 text-xs text-slate-900 focus:border-[#0055A4] outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2 text-xs text-slate-900 dark:text-white focus:border-[#0055A4] dark:focus:border-blue-500 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
-                  <span className="absolute left-2.5 top-2.5 text-xs text-slate-400">{Icons.search}</span>
+                  <span className="absolute left-2.5 top-2.5 text-xs text-slate-400 dark:text-slate-500">{Icons.search}</span>
                 </div>
               </div>
 
               {/* Directory Table */}
               <div className="overflow-x-auto mt-4">
-                <table className="w-full text-left text-xs text-slate-700">
-                  <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold border-b border-slate-200">
+                <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 uppercase text-[10px] font-bold border-b border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="py-3 px-4">Jeweller Entity</th>
                       <th className="py-3 px-4">BIS License (CM/L)</th>
@@ -889,15 +895,15 @@ export default function HallmarkPage() {
                       <th className="py-3 px-4">Registry Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                     {filteredJewellers.map((j, i) => (
-                      <tr key={i} className="hover:bg-slate-50/70 transition">
-                        <td className="py-3 px-4 font-semibold text-slate-900">{j.name}</td>
-                        <td className="py-3 px-4 font-mono text-blue-700 font-semibold">{j.cml}</td>
-                        <td className="py-3 px-4 text-slate-600">{j.city}, {j.state}</td>
-                        <td className="py-3 px-4 font-mono text-slate-700">{j.articlesTested}</td>
+                      <tr key={i} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
+                        <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">{j.name}</td>
+                        <td className="py-3 px-4 font-mono text-blue-700 dark:text-blue-400 font-semibold">{j.cml}</td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{j.city}, {j.state}</td>
+                        <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300">{j.articlesTested}</td>
                         <td className="py-3 px-4">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
                             {Icons.checkCircle}
                             <span>{j.status}</span>
                           </span>
@@ -914,67 +920,67 @@ export default function HallmarkPage() {
         {/* ═════════ TAB 4: CONSUMER RIGHTS & DISPUTE REDRESSAL ═════════ */}
         {activeTab === "rights" && (
           <div className="space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold mb-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 text-xs font-semibold mb-2">
                   {Icons.shieldCheck}
                   <span>BIS Act 2016 & Hallmarking Regulations</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   Consumer Protection & Testing Provisions
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                   Key statutory protections and redressal mechanisms for precious metal jewellery buyers in India.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                  <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-sm">
+                <div className="p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-2">
+                  <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 flex items-center justify-center font-bold text-sm">
                     ₹45
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900">Consumer Assay Testing Right</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Consumer Assay Testing Right</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Any consumer can take an article to any BIS-recognized Assaying & Hallmarking Centre (AHC) for independent purity testing for a statutory fee of <strong>₹45 per article</strong>.
                   </p>
                 </div>
 
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
+                <div className="p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-2">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-sm">
                     3X
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900">3X Penalty Refund on Shortage</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">3X Penalty Refund on Shortage</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     If an assay test proves that the gold purity is lower than the stamped Karat grade, the jeweller is legally obligated to compensate the buyer with <strong>3 times the cost difference</strong>.
                   </p>
                 </div>
 
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                  <div className="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center">
+                <div className="p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-2">
+                  <div className="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 flex items-center justify-center">
                     {Icons.certificate}
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900">BIS Care App Verification</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">BIS Care App Verification</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Consumers can instantly verify any 6-digit HUID code before making payment directly on the official <strong>BIS Care App</strong> available on iOS and Android.
                   </p>
                 </div>
               </div>
 
               {/* 3-Point Mandatory Checklist */}
-              <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Mandatory 3 Marks on All BIS Hallmarked Jewellery</h4>
+              <div className="p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-3">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Mandatory 3 Marks on All BIS Hallmarked Jewellery</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                    <span className="font-bold text-slate-900 block mb-1">1. BIS Standard Logo</span>
-                    <span className="text-slate-500 text-[11px]">Official triangular emblem guaranteeing standard conformity.</span>
+                  <div className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <span className="font-bold text-slate-900 dark:text-white block mb-1">1. BIS Standard Logo</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px]">Official triangular emblem guaranteeing standard conformity.</span>
                   </div>
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                    <span className="font-bold text-slate-900 block mb-1">2. Purity / Fineness Grade</span>
-                    <span className="text-slate-500 text-[11px]">Exact fineness indicator: 22K916, 18K750, or 14K585.</span>
+                  <div className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <span className="font-bold text-slate-900 dark:text-white block mb-1">2. Purity / Fineness Grade</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px]">Exact fineness indicator: 22K916, 18K750, or 14K585.</span>
                   </div>
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg">
-                    <span className="font-bold text-slate-900 block mb-1">3. 6-Digit Laser HUID</span>
-                    <span className="text-slate-500 text-[11px]">Unique alphanumeric laser identifier traceable on central registry.</span>
+                  <div className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <span className="font-bold text-slate-900 dark:text-white block mb-1">3. 6-Digit Laser HUID</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px]">Unique alphanumeric laser identifier traceable on central registry.</span>
                   </div>
                 </div>
               </div>

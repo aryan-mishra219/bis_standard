@@ -3,6 +3,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ThemeToggle from "./components/ThemeToggle";
+import CustomSelect from "./components/CustomSelect";
 
 /* ─── Icons (SVG) ─── */
 const Icons = {
@@ -31,6 +33,7 @@ const Icons = {
   cog: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>,
   mapPin: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
   doc: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m3 15 2 2 4-4"/></svg>,
+  zap: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
 };
 
 /* ─── Animation Config ─── */
@@ -591,7 +594,7 @@ export default function ChatInterface() {
 
   /* ═══════════════ RENDER ═══════════════ */
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#f1f5f9]">
+    <div className="flex h-screen w-full overflow-hidden bg-[#f1f5f9] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-200">
 
       {/* ═══ Mobile Sidebar Overlay ═══ */}
       <AnimatePresence>
@@ -610,39 +613,25 @@ export default function ChatInterface() {
       <aside className={`
         fixed lg:relative z-50 lg:z-auto top-0 left-0 bottom-0
         w-65 shrink-0
-        bg-[#0f172a] text-slate-400
-        flex flex-col
+        bg-[#0f172a] dark:bg-[#0b1120] text-slate-400
+        flex flex-col border-r border-slate-800/60
         transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
         ${mobileSidebar ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
       `}>
         {/* Brand */}
-        <div className="px-4 pt-4 pb-3 border-b border-white/6">
+        <div className="px-4 py-3.5 border-b border-white/6">
           <div className="flex items-center gap-2.5">
-            <img src="/bis-logo.png" alt="BIS" className="w-9 h-9 rounded-lg object-contain shrink-0 bg-white p-0.5" />
+            <img src="/bis-logo.png" alt="BIS" className="w-9 h-9 rounded-lg object-contain shrink-0 bg-white p-0.5 shadow-xs" />
             <div className="min-w-0">
               <h1 className="text-[13px] font-bold text-white tracking-tight leading-none">P.R.A.M.A.A.N</h1>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-none">Bureau of Indian Standards</p>
+              <p className="text-[10px] text-slate-400 mt-0.5 leading-none">Bureau of Indian Standards</p>
             </div>
           </div>
-          <button
-            onClick={() => {
-              if (typingTimerRef.current) {
-                clearInterval(typingTimerRef.current);
-                typingTimerRef.current = null;
-              }
-              setMessages([]);
-              setMobileSidebar(false);
-            }}
-            className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#1e3a5f] hover:bg-[#254b77] text-white text-[11px] font-semibold transition-colors duration-200 border border-white/6 cursor-pointer"
-          >
-            {Icons.plus}
-            <span>New Consultation</span>
-          </button>
         </div>
 
         {/* Strategy Portals */}
         <div className="px-3 pt-3 pb-1">
-          <p className="px-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-600 mb-1.5">Strategy Portals</p>
+          <p className="px-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-500 mb-1.5">Strategy Portals</p>
           {strategyPortals.map((p) => (
             <button
               key={p.id}
@@ -658,9 +647,9 @@ export default function ChatInterface() {
                 }
                 setMobileSidebar(false);
               }}
-              className="w-full flex items-center gap-2.5 px-2.5 py-1.75 rounded-md text-[11px] hover:bg-white/6 hover:text-slate-200 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.75 rounded-md text-[11px] text-slate-300 hover:bg-white/6 hover:text-white transition-colors text-left cursor-pointer"
             >
-              <span className="text-slate-500 shrink-0">{p.icon}</span>
+              <span className="text-slate-400 shrink-0">{p.icon}</span>
               <span className="truncate">{p.label}</span>
               {p.id === "lab" && (
                 <span className="ml-auto text-[9px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.2 rounded">
@@ -678,21 +667,27 @@ export default function ChatInterface() {
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Sidebar Footer Info */}
+        <div className="p-3 border-t border-white/6 flex items-center justify-between text-[10px] text-slate-500">
+          <span>BIS v2.4 Regulatory Core</span>
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="System Live" />
+        </div>
       </aside>
 
       {/* ═══ MAIN PANEL ═══ */}
       <div className="flex-1 flex flex-col min-w-0 h-screen">
 
         {/* ── Header ── */}
-        <header className="shrink-0 bg-white border-b border-gray-200 px-3 sm:px-4 h-12 flex items-center gap-2.5">
+        <header className="shrink-0 bg-white dark:bg-[#0d131f] border-b border-gray-200 dark:border-slate-800 px-3 sm:px-4 h-12 flex items-center gap-2.5 transition-colors">
           {/* Mobile hamburger */}
-          <button onClick={() => setMobileSidebar(true)} className="lg:hidden p-1.5 -ml-1 rounded-md hover:bg-gray-100 transition-colors text-gray-500" aria-label="Menu">
+          <button onClick={() => setMobileSidebar(true)} className="lg:hidden p-1.5 -ml-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-500 dark:text-slate-400" aria-label="Menu">
             {Icons.menu}
           </button>
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-2 min-w-0">
             <img src="/bis-logo.png" alt="BIS" className="w-7 h-7 rounded-md object-contain shrink-0 bg-white p-0.5" />
-            <span className="text-sm font-semibold text-gray-900 truncate">P.R.A.M.A.A.N</span>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">P.R.A.M.A.A.N</span>
           </div>
 
           {/* Tabs */}
@@ -703,8 +698,8 @@ export default function ChatInterface() {
                 onClick={() => { setActiveTab(tab.label); handleSend(`Help me with ${tab.label}`); }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors duration-150 border ${
                   activeTab === tab.label
-                    ? "bg-[#0055A4] text-white border-[#0055A4]"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    ? "bg-[#0055A4] text-white border-[#0055A4] dark:bg-sky-600 dark:border-sky-600"
+                    : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-700"
                 }`}
               >
                 <span className="text-current opacity-70">{tab.icon}</span>
@@ -715,28 +710,42 @@ export default function ChatInterface() {
 
           {/* Right controls */}
           <div className="flex items-center gap-1.5 ml-auto shrink-0">
-            <label className="hidden sm:inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-md cursor-pointer border border-gray-200 hover:bg-gray-50 transition-colors select-none text-gray-600">
-              <input type="checkbox" checked={simplify} onChange={(e) => setSimplify(e.target.checked)} className="accent-[#0055A4] w-3 h-3 cursor-pointer" />
+            <label className="hidden sm:inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-md cursor-pointer border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors select-none text-gray-600 dark:text-slate-300">
+              <input type="checkbox" checked={simplify} onChange={(e) => setSimplify(e.target.checked)} className="accent-[#0055A4] dark:accent-sky-500 w-3 h-3 cursor-pointer" />
               ELI5
             </label>
-            <div className="inline-flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-md border border-gray-200 text-gray-600">
-              <span className="text-gray-400 shrink-0">{Icons.globe}</span>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-transparent text-gray-700 font-medium focus:outline-none cursor-pointer text-[11px] pr-1">
-                <option value="English">EN</option>
-                <option value="Hindi">HI</option>
-                <option value="Tamil">TA</option>
-                <option value="Bengali">BN</option>
-              </select>
-            </div>
+            
+            <CustomSelect
+              value={language}
+              onChange={setLanguage}
+              options={[
+                { value: "English", label: "EN", subtitle: "English" },
+                { value: "Hindi", label: "HI", subtitle: "हिन्दी" },
+                { value: "Tamil", label: "TA", subtitle: "தமிழ்" },
+                { value: "Bengali", label: "BN", subtitle: "বাংলা" },
+              ]}
+              size="sm"
+              icon={Icons.globe}
+              className="w-24"
+              buttonClassName="py-1 px-2 text-[11px] h-[30px] rounded-md border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+              menuClassName="w-36 right-0"
+              align="right"
+              ariaLabel="Select language"
+            />
+
             <button
               onClick={() => setShowFeePanel(!showFeePanel)}
               className={`hidden md:inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-md font-medium transition-colors duration-150 border whitespace-nowrap ${
-                showFeePanel ? "bg-amber-50 text-amber-800 border-amber-200" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                showFeePanel
+                  ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60"
+                  : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               {Icons.tag} MSME Fee
             </button>
 
+            {/* Dark Mode Toggle Button */}
+            <ThemeToggle showLabel={false} />
           </div>
         </header>
 
@@ -750,8 +759,8 @@ export default function ChatInterface() {
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="space-y-6 max-w-3xl lg:max-w-4xl w-full">
                   <div className="space-y-2.5">
                     <img src="/bis-logo.png" alt="BIS" className="w-16 h-16 rounded-2xl object-contain shadow-lg mb-1 bg-white p-1.5 mx-auto" />
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">How can I help you with Indian Standards today?</h2>
-                    <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">Verify BIS certifications, audit product compliance, calculate MSME marking fees, or explore Indian standards.</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">How can I help you with Indian Standards today?</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 max-w-lg mx-auto">Verify BIS certifications, audit product compliance, calculate MSME marking fees, or explore Indian standards.</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                     {starterPrompts.map((p, i) => (
@@ -759,17 +768,17 @@ export default function ChatInterface() {
                         key={i}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06, duration: 0.3 }}
                         onClick={() => handleSend(p.text)}
-                        className="flex items-start gap-3.5 p-4 bg-white border border-gray-200 rounded-xl hover:border-[#0055A4]/40 hover:shadow-md transition-all duration-150 text-left group cursor-pointer"
+                        className="flex items-start gap-3.5 p-4 bg-white dark:bg-[#111827] border border-gray-200 dark:border-slate-800 rounded-xl hover:border-[#0055A4]/40 dark:hover:border-sky-500/40 hover:shadow-md transition-all duration-150 text-left group cursor-pointer"
                       >
-                        <span className="text-gray-400 mt-0.5 shrink-0 group-hover:text-[#0055A4] transition-colors">{p.icon}</span>
-                        <span className="text-[13px] text-gray-700 leading-snug group-hover:text-gray-900 font-medium transition-colors">{p.text}</span>
+                        <span className="text-gray-400 dark:text-slate-500 mt-0.5 shrink-0 group-hover:text-[#0055A4] dark:group-hover:text-sky-400 transition-colors">{p.icon}</span>
+                        <span className="text-[13px] text-gray-700 dark:text-slate-200 leading-snug group-hover:text-gray-900 dark:group-hover:text-white font-medium transition-colors">{p.text}</span>
                       </motion.button>
                     ))}
                   </div>
                   {/* Mobile tabs */}
                   <div className="flex sm:hidden overflow-x-auto gap-1.5 no-scrollbar">
                     {actionTabs.map((tab) => (
-                      <button key={tab.label} onClick={() => handleSend(`Help me with ${tab.label}`)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors shrink-0">
+                      <button key={tab.label} onClick={() => handleSend(`Help me with ${tab.label}`)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shrink-0">
                         <span className="opacity-60">{tab.icon}</span> {tab.label}
                       </button>
                     ))}
@@ -784,13 +793,13 @@ export default function ChatInterface() {
 
                       {/* Assistant avatar */}
                       {msg.role === "assistant" && (
-                        <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain mt-1 shrink-0 bg-white p-0.5 border border-gray-200/80 shadow-xs" />
+                        <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain mt-1 shrink-0 bg-white p-0.5 border border-gray-200/80 dark:border-slate-700 shadow-xs" />
                       )}
 
                       <div className={`overflow-hidden ${
                         msg.role === "user"
-                          ? "max-w-[85%] sm:max-w-[70%] bg-[#0055A4] text-white rounded-2xl rounded-br-sm px-4 py-2.5 shadow-sm"
-                          : "flex-1 min-w-0 bg-white border border-gray-200/90 rounded-2xl rounded-tl-sm px-5 py-4 shadow-xs"
+                          ? "max-w-[85%] sm:max-w-[70%] bg-[#0055A4] dark:bg-sky-600 text-white rounded-2xl rounded-br-sm px-4 py-2.5 shadow-sm"
+                          : "flex-1 min-w-0 bg-white dark:bg-[#111827] border border-gray-200/90 dark:border-slate-800 rounded-2xl rounded-tl-sm px-5 py-4 shadow-xs dark:shadow-md"
                       }`}>
 
                         {msg.image && (
@@ -798,15 +807,15 @@ export default function ChatInterface() {
                         )}
 
                         {msg.role === "assistant" ? (
-                          <div className="msg-prose text-[13px] text-gray-700 wrap-break-word">
+                          <div className="msg-prose text-[13px] text-gray-700 dark:text-slate-200 wrap-break-word">
 
                             {msg.is_error ? (
-                              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs space-y-2">
-                                <div className="flex items-center gap-2 font-semibold text-red-800">
+                              <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-lg text-xs space-y-2">
+                                <div className="flex items-center gap-2 font-semibold text-red-800 dark:text-red-300">
                                   <span className="text-red-500">{Icons.alert}</span>
                                   {msg.content}
                                 </div>
-                                <p className="text-[11px] text-red-600/80">Connection interrupted. Click retry to resend.</p>
+                                <p className="text-[11px] text-red-600/80 dark:text-red-400/80">Connection interrupted. Click retry to resend.</p>
                                 <button onClick={() => handleSend(msg.failed_query || lastQuery)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md font-semibold text-xs transition-colors">
                                   {Icons.retry} Retry
                                 </button>
@@ -817,8 +826,8 @@ export default function ChatInterface() {
                                 {msg.actions_taken?.length > 0 && (
                                   <div className="mb-2.5 flex flex-wrap gap-1.5">
                                     {msg.actions_taken.map((action, i) => (
-                                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-full text-[10px] font-medium">
-                                        <span className="text-slate-400">{Icons.cog}</span>
+                                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full text-[10px] font-medium">
+                                        <span className="text-slate-400 dark:text-slate-500">{Icons.cog}</span>
                                         <span className="truncate max-w-50">{action}</span>
                                       </span>
                                     ))}
@@ -827,11 +836,11 @@ export default function ChatInterface() {
 
                                 {/* Markdown with Typing Cursor */}
                                 <div className="relative">
-                                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {msg.content ? msg.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim() : ""}
                                   </ReactMarkdown>
                                   {msg.isTyping && (
-                                    <span className="inline-block w-2 h-4 ml-1 bg-[#0055A4] rounded-xs animate-pulse align-middle" />
+                                    <span className="inline-block w-2 h-4 ml-1 bg-[#0055A4] dark:bg-sky-400 rounded-xs animate-pulse align-middle" />
                                   )}
                                 </div>
 
@@ -853,9 +862,9 @@ export default function ChatInterface() {
                                           return updated;
                                         });
                                       }}
-                                      className="text-[10px] text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1"
+                                      className="text-[10px] text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1"
                                     >
-                                      <span>⚡ Show full response</span>
+                                      <span className="flex items-center gap-1.5">{Icons.zap} Show full response</span>
                                     </button>
                                   </div>
                                 )}
@@ -865,18 +874,18 @@ export default function ChatInterface() {
                                   <>
                                     {/* Process Timeline */}
                                     {msg.process_timeline?.length > 0 && (
-                                      <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                                        <div className="flex items-center gap-1.5 mb-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                      <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-xl">
+                                        <div className="flex items-center gap-1.5 mb-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                                           {Icons.mapPin}
                                           <span>Process Navigator — {msg.process_timeline.length} Steps</span>
                                         </div>
-                                        <div className="relative pl-7 border-l-2 border-slate-300 space-y-3">
+                                        <div className="relative pl-7 border-l-2 border-slate-300 dark:border-slate-700 space-y-3">
                                           {msg.process_timeline.map((step, i) => (
                                             <div key={i} className="relative">
-                                              <div className="absolute -left-5.75 top-0 w-6 h-6 rounded-full bg-[#0055A4] text-white text-[10px] font-bold flex items-center justify-center ring-[3px] ring-slate-50">{step.step_number || i + 1}</div>
-                                              <div className="bg-white p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
-                                                <h4 className="text-xs font-semibold text-gray-900">{step.title}</h4>
-                                                <p className="text-[11px] text-gray-500 mt-0.5">{step.description}</p>
+                                              <div className="absolute -left-5.75 top-0 w-6 h-6 rounded-full bg-[#0055A4] dark:bg-sky-600 text-white text-[10px] font-bold flex items-center justify-center ring-[3px] ring-slate-50 dark:ring-slate-900">{step.step_number || i + 1}</div>
+                                              <div className="bg-white dark:bg-slate-800/90 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+                                                <h4 className="text-xs font-semibold text-gray-900 dark:text-white">{step.title}</h4>
+                                                <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">{step.description}</p>
                                               </div>
                                             </div>
                                           ))}
@@ -886,12 +895,12 @@ export default function ChatInterface() {
 
                                     {/* Compliance Report */}
                                     {msg.compliance_report && (
-                                      <div className="mt-4 p-4 bg-[#0f172a] text-white rounded-xl border border-slate-700/50">
+                                      <div className="mt-4 p-4 bg-[#0f172a] dark:bg-[#080d1a] text-white rounded-xl border border-slate-700/50">
                                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-700/50">
                                           <div className="flex items-center gap-2">
-                                            <span className="text-blue-300">{Icons.shield}</span>
+                                            <span className="text-blue-300 dark:text-sky-400">{Icons.shield}</span>
                                             <div>
-                                              <h3 className="text-[11px] font-semibold tracking-wide uppercase text-blue-200">Compliance Readiness Report</h3>
+                                              <h3 className="text-[11px] font-semibold tracking-wide uppercase text-blue-200 dark:text-sky-300">Compliance Readiness Report</h3>
                                               <p className="text-[10px] text-slate-400">ID: <span className="font-mono font-semibold text-white">{msg.compliance_report.report_id}</span> | {msg.compliance_report.product_name}</p>
                                             </div>
                                           </div>
@@ -937,12 +946,12 @@ export default function ChatInterface() {
 
                                     {/* Sources */}
                                     {msg.sources?.length > 0 && (
-                                      <div className="mt-3 pt-2.5 border-t border-gray-100">
-                                        <p className="text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Sources Referenced</p>
+                                      <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-800">
+                                        <p className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 mb-1.5 uppercase tracking-wider">Sources Referenced</p>
                                         <div className="flex flex-wrap gap-1.5">
                                           {msg.sources.map((src, i) => (
-                                            <div key={i} className="group relative text-[10px] bg-slate-50 text-slate-500 px-2 py-1 rounded cursor-default hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1">
-                                              <span className="text-slate-400">{Icons.doc}</span>
+                                            <div key={i} className="group relative text-[10px] bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-300 px-2 py-1 rounded cursor-default hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1">
+                                              <span className="text-slate-400 dark:text-slate-400">{Icons.doc}</span>
                                               {src.document} (Pg. {src.page})
                                               <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-56 p-2.5 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl z-10 whitespace-normal leading-relaxed">&ldquo;{src.content_snippet}...&rdquo;</div>
                                             </div>
@@ -952,11 +961,11 @@ export default function ChatInterface() {
                                     )}
 
                                     {/* Feedback */}
-                                    <div className="mt-2.5 pt-2 flex items-center justify-between border-t border-gray-100">
-                                      <span className="text-[10px] text-gray-400">Was this helpful?</span>
+                                    <div className="mt-2.5 pt-2 flex items-center justify-between border-t border-gray-100 dark:border-slate-800">
+                                      <span className="text-[10px] text-gray-400 dark:text-slate-500">Was this helpful?</span>
                                       <div className="flex items-center gap-0.5">
-                                        <button onClick={() => handleFeedback(idx, "up")} className={`p-1 rounded hover:bg-gray-100 transition-colors ${feedbackState[idx] === "up" ? "text-[#0055A4]" : "text-gray-400 hover:text-gray-600"}`} title="Helpful">{Icons.thumbUp}</button>
-                                        <button onClick={() => handleFeedback(idx, "down")} className={`p-1 rounded hover:bg-gray-100 transition-colors ${feedbackState[idx] === "down" ? "text-red-500" : "text-gray-400 hover:text-gray-600"}`} title="Not helpful">{Icons.thumbDown}</button>
+                                        <button onClick={() => handleFeedback(idx, "up")} className={`p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors ${feedbackState[idx] === "up" ? "text-[#0055A4] dark:text-sky-400" : "text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"}`} title="Helpful">{Icons.thumbUp}</button>
+                                        <button onClick={() => handleFeedback(idx, "down")} className={`p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors ${feedbackState[idx] === "down" ? "text-red-500" : "text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"}`} title="Not helpful">{Icons.thumbDown}</button>
                                       </div>
                                     </div>
                                   </>
@@ -984,7 +993,7 @@ export default function ChatInterface() {
                   scrollToBottom(true);
                   setShowScrollBottomBtn(false);
                 }}
-                className="sticky bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0055A4] hover:bg-[#003d7a] text-white text-xs font-semibold rounded-full shadow-lg transition-all cursor-pointer border border-white/20 animate-bounce"
+                className="sticky bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0055A4] hover:bg-[#003d7a] dark:bg-sky-600 dark:hover:bg-sky-700 text-white text-xs font-semibold rounded-full shadow-lg transition-all cursor-pointer border border-white/20 animate-bounce"
               >
                 <span>↓ Jump to latest</span>
               </button>
@@ -999,24 +1008,24 @@ export default function ChatInterface() {
                 animate={{ width: 380, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
                 transition={panelSpring}
-                className="fixed inset-y-0 right-0 z-50 md:relative md:z-auto md:flex flex-col shrink-0 border-l border-gray-200 bg-white overflow-hidden shadow-xl md:shadow-none"
+                className="fixed inset-y-0 right-0 z-50 md:relative md:z-auto md:flex flex-col shrink-0 border-l border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0d131f] overflow-hidden shadow-xl md:shadow-none"
               >
-                <div className="flex flex-col h-full w-[380px]">
+                <div className="flex flex-col h-full w-95">
                   
                   {/* Panel Header */}
-                  <div className="p-3.5 border-b border-gray-200 bg-slate-50 flex items-center justify-between shrink-0">
+                  <div className="p-3.5 border-b border-gray-200 dark:border-slate-800 bg-slate-50 dark:bg-[#111827] flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
-                      <span className="p-1.5 bg-[#0055A4] text-white rounded-lg">{Icons.calculator}</span>
+                      <span className="p-1.5 bg-[#0055A4] dark:bg-sky-600 text-white rounded-lg">{Icons.calculator}</span>
                       <div>
-                        <h3 className="text-xs font-bold text-gray-900 leading-tight">BIS Feasibility & Cost Estimator</h3>
-                        <p className="text-[10px] text-gray-500">Gazette Schedule & Subsidy Calculator</p>
+                        <h3 className="text-xs font-bold text-gray-900 dark:text-white leading-tight">BIS Feasibility & Cost Estimator</h3>
+                        <p className="text-[10px] text-gray-500 dark:text-slate-400">Gazette Schedule & Subsidy Calculator</p>
                       </div>
                     </div>
-                    <button onClick={() => setShowFeePanel(false)} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-gray-600">{Icons.close}</button>
+                    <button onClick={() => setShowFeePanel(false)} className="p-1.5 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">{Icons.close}</button>
                   </div>
 
                   {/* Panel Tabs */}
-                  <div className="px-3 pt-2.5 pb-1 border-b border-gray-100 flex gap-1 bg-white shrink-0">
+                  <div className="px-3 pt-2.5 pb-1 border-b border-gray-100 dark:border-slate-800 flex gap-1 bg-white dark:bg-[#0d131f] shrink-0">
                     {[
                       { id: "fee", label: "Fee Schedule", icon: Icons.tag },
                       { id: "capex", label: "Lab Capex", icon: Icons.flask },
@@ -1025,10 +1034,10 @@ export default function ChatInterface() {
                       <button
                         key={tab.id}
                         onClick={() => setCalculatorTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold rounded-lg transition-colors ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold rounded-lg transition-colors cursor-pointer ${
                           calculatorTab === tab.id
-                            ? "bg-[#0055A4] text-white shadow-xs"
-                            : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                            ? "bg-[#0055A4] dark:bg-sky-600 text-white shadow-xs"
+                            : "bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                         }`}
                       >
                         <span className="opacity-80">{tab.icon}</span>
@@ -1038,7 +1047,7 @@ export default function ChatInterface() {
                   </div>
 
                   {/* Panel Body */}
-                  <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 text-xs text-gray-700">
+                  <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 text-xs text-gray-700 dark:text-slate-300">
 
                     {/* ═══ TAB 1: Statutory Fee Calculator ═══ */}
                     {calculatorTab === "fee" && (
@@ -1046,70 +1055,75 @@ export default function ChatInterface() {
 
                         {/* Product Sector */}
                         <div>
-                          <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Product Sector & Standard</label>
-                          <select
+                          <label className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Product Sector & Standard</label>
+                          <CustomSelect
                             value={selectedSectorId}
-                            onChange={(e) => handleSectorChange(e.target.value)}
-                            className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-900 rounded-lg p-2 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 focus:border-[#0055A4] cursor-pointer"
-                          >
-                            {productSectors.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.name} ({s.standard})
-                              </option>
-                            ))}
-                          </select>
-                          <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500 px-0.5">
-                            <span className="font-semibold text-blue-700">{currentSector.standard}</span>
-                            <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-medium">{currentSector.scheme}</span>
+                            onChange={(val) => handleSectorChange(val)}
+                            options={productSectors.map((s) => ({
+                              value: s.id,
+                              label: `${s.name} (${s.standard})`,
+                              subtitle: s.scheme,
+                            }))}
+                            placeholder="Select product sector"
+                            size="md"
+                            ariaLabel="Select Product Sector & Standard"
+                          />
+                          <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 px-0.5">
+                            <span className="font-semibold text-blue-700 dark:text-sky-400">{currentSector.standard}</span>
+                            <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-[9px] font-medium">{currentSector.scheme}</span>
                           </div>
                         </div>
 
                         {/* Procedure Track & Enterprise Scale in Grid */}
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Procedure Track</label>
-                            <select
+                            <label className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Procedure Track</label>
+                            <CustomSelect
                               value={applicationTrack}
-                              onChange={(e) => setApplicationTrack(e.target.value)}
-                              className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-800 rounded-lg p-2 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer"
-                            >
-                              <option value="simplified">Simplified (30 Days)</option>
-                              <option value="normal">Normal (60-90 Days)</option>
-                            </select>
+                              onChange={setApplicationTrack}
+                              options={[
+                                { value: "simplified", label: "Simplified (30 Days)" },
+                                { value: "normal", label: "Normal (60-90 Days)" },
+                              ]}
+                              size="sm"
+                              ariaLabel="Select Procedure Track"
+                            />
                           </div>
                           <div>
-                            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Enterprise Scale</label>
-                            <select
+                            <label className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Enterprise Scale</label>
+                            <CustomSelect
                               value={enterpriseType}
-                              onChange={(e) => setEnterpriseType(e.target.value)}
-                              className="w-full text-xs bg-gray-50 border border-gray-200 text-gray-800 rounded-lg p-2 font-medium focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer"
-                            >
-                              <option value="Micro/Startup">Micro / Startup (80% Off)</option>
-                              <option value="Small">Small (50% Off)</option>
-                              <option value="Large">Large Enterprise (0%)</option>
-                            </select>
+                              onChange={setEnterpriseType}
+                              options={[
+                                { value: "Micro/Startup", label: "Micro / Startup", badge: "80% Off" },
+                                { value: "Small", label: "Small", badge: "50% Off" },
+                                { value: "Large", label: "Large Enterprise", badge: "0%" },
+                              ]}
+                              size="sm"
+                              ariaLabel="Select Enterprise Scale"
+                            />
                           </div>
                         </div>
 
                         {/* Special Concession Toggle */}
-                        <label className="flex items-center gap-2 p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 cursor-pointer select-none">
+                        <label className="flex items-center gap-2 p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 cursor-pointer select-none">
                           <input
                             type="checkbox"
                             checked={isSpecialCategory}
                             onChange={(e) => setIsSpecialCategory(e.target.checked)}
-                            className="accent-[#0055A4] w-3.5 h-3.5 rounded cursor-pointer shrink-0"
+                            className="accent-[#0055A4] dark:accent-amber-400 w-3.5 h-3.5 rounded cursor-pointer shrink-0"
                           />
-                          <div className="text-[11px] text-amber-900 leading-tight">
+                          <div className="text-[11px] text-amber-900 dark:text-amber-200 leading-tight">
                             <span className="font-bold">Women / SC-ST / NER Unit</span>
-                            <span className="text-[10px] text-amber-700 block">+10% additional statutory rebate</span>
+                            <span className="text-[10px] text-amber-700 dark:text-amber-300 block">+10% additional statutory rebate</span>
                           </div>
                         </label>
 
                         {/* Annual Production Volume Slider */}
-                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 space-y-1.5">
                           <div className="flex justify-between items-center text-[11px]">
-                            <span className="font-semibold text-slate-700">Estimated Annual Volume</span>
-                            <span className="font-bold text-[#0055A4]">{Number(productionVolume).toLocaleString("en-IN")} <span className="text-[10px] text-slate-500 font-normal">{currentSector.unitName}</span></span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">Estimated Annual Volume</span>
+                            <span className="font-bold text-[#0055A4] dark:text-sky-400">{Number(productionVolume).toLocaleString("en-IN")} <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">{currentSector.unitName}</span></span>
                           </div>
                           <input
                             type="range"
@@ -1118,9 +1132,9 @@ export default function ChatInterface() {
                             step={currentSector.stepVolume}
                             value={productionVolume}
                             onChange={(e) => setProductionVolume(Number(e.target.value))}
-                            className="w-full accent-[#0055A4] cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+                            className="w-full accent-[#0055A4] dark:accent-sky-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
                           />
-                          <div className="flex justify-between text-[9px] text-slate-400">
+                          <div className="flex justify-between text-[9px] text-slate-400 dark:text-slate-500">
                             <span>Min: {currentSector.minVolume.toLocaleString("en-IN")}</span>
                             <span>Rate: ₹{currentSector.unitRate} / unit</span>
                             <span>Max: {currentSector.maxVolume.toLocaleString("en-IN")}</span>
@@ -1128,7 +1142,7 @@ export default function ChatInterface() {
                         </div>
 
                         {/* Total Outflow Hero Card */}
-                        <div className="bg-[#0f172a] text-white rounded-xl p-3.5 text-center space-y-1 shadow-sm">
+                        <div className="bg-[#0f172a] dark:bg-[#080d1a] text-white rounded-xl p-3.5 text-center space-y-1 shadow-sm border border-slate-800">
                           <div className="text-[9px] text-slate-400 uppercase font-semibold tracking-wider">Estimated Total Statutory Outflow (incl. 18% GST)</div>
                           <div className="text-2xl font-black tracking-tight text-white">₹{totalPayable.toLocaleString("en-IN")}</div>
                           {totalSavings > 0 && (
@@ -1139,49 +1153,49 @@ export default function ChatInterface() {
                         </div>
 
                         {/* Detailed Itemized Breakdown */}
-                        <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                          <div className="px-3 py-1.5 bg-slate-100 border-b border-gray-200 text-[10px] font-bold uppercase tracking-wider text-slate-600 flex justify-between">
+                        <div className="border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
+                          <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex justify-between">
                             <span>Cost Head (Statutory)</span>
                             <span>Amount</span>
                           </div>
                           <div className="p-2.5 space-y-1.5 text-[11px]">
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between text-gray-600 dark:text-slate-400">
                               <span>1. Application Filing Fee:</span>
-                              <span className="font-semibold text-gray-900">₹{applicationFee.toLocaleString("en-IN")}</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">₹{applicationFee.toLocaleString("en-IN")}</span>
                             </div>
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between text-gray-600 dark:text-slate-400">
                               <span>2. Factory Audit Fee ({applicationTrack === "simplified" ? "1 Day" : `${currentSector.inspectionDays} Days`}):</span>
-                              <span className="font-semibold text-gray-900">₹{inspectionFee.toLocaleString("en-IN")}</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">₹{inspectionFee.toLocaleString("en-IN")}</span>
                             </div>
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between text-gray-600 dark:text-slate-400">
                               <span>3. NABL Sample Testing Fee:</span>
-                              <span className="font-semibold text-gray-900">₹{Math.round(effectiveLabFee).toLocaleString("en-IN")}</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">₹{Math.round(effectiveLabFee).toLocaleString("en-IN")}</span>
                             </div>
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between text-gray-600 dark:text-slate-400">
                               <span>4. Annual Marking Fee (Gross):</span>
-                              <span className="font-medium text-gray-700">₹{Math.round(grossMarkingFee).toLocaleString("en-IN")}</span>
+                              <span className="font-medium text-gray-700 dark:text-slate-300">₹{Math.round(grossMarkingFee).toLocaleString("en-IN")}</span>
                             </div>
                             {markingDiscountAmount > 0 && (
-                              <div className="flex justify-between text-emerald-600 font-semibold pl-2">
+                              <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold pl-2">
                                 <span>↳ MSME/Startup Concession (-{effectiveConcessionPct}%):</span>
                                 <span>-₹{Math.round(markingDiscountAmount).toLocaleString("en-IN")}</span>
                               </div>
                             )}
-                            <div className="flex justify-between text-slate-800 font-medium pl-2">
+                            <div className="flex justify-between text-slate-800 dark:text-slate-300 font-medium pl-2">
                               <span>↳ Net Annual Marking Fee:</span>
-                              <span className="font-semibold">₹{Math.round(netMarkingFee).toLocaleString("en-IN")}</span>
+                              <span className="font-semibold text-slate-900 dark:text-white">₹{Math.round(netMarkingFee).toLocaleString("en-IN")}</span>
                             </div>
-                            <div className="border-t border-gray-100 pt-1.5 flex justify-between text-gray-600">
+                            <div className="border-t border-gray-100 dark:border-slate-800 pt-1.5 flex justify-between text-gray-600 dark:text-slate-400">
                               <span>Statutory Subtotal:</span>
-                              <span className="font-semibold text-gray-800">₹{subtotal.toLocaleString("en-IN")}</span>
+                              <span className="font-semibold text-gray-800 dark:text-slate-200">₹{subtotal.toLocaleString("en-IN")}</span>
                             </div>
-                            <div className="flex justify-between text-gray-500 text-[10px]">
+                            <div className="flex justify-between text-gray-500 dark:text-slate-500 text-[10px]">
                               <span>Statutory GST (18.0%):</span>
                               <span>₹{gstAmount.toLocaleString("en-IN")}</span>
                             </div>
-                            <div className="border-t border-gray-200 pt-1.5 flex justify-between font-bold text-gray-900 text-xs">
+                            <div className="border-t border-gray-200 dark:border-slate-800 pt-1.5 flex justify-between font-bold text-gray-900 dark:text-white text-xs">
                               <span>Net Total Payable to BIS:</span>
-                              <span className="text-[#0055A4]">₹{totalPayable.toLocaleString("en-IN")}</span>
+                              <span className="text-[#0055A4] dark:text-sky-400">₹{totalPayable.toLocaleString("en-IN")}</span>
                             </div>
                           </div>
                         </div>
@@ -1210,10 +1224,10 @@ export default function ChatInterface() {
                             href="https://www.manakonline.in"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1.5 border border-slate-200"
+                            className="w-full py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-[11px] font-semibold transition-colors flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700"
                           >
                             <span>Apply on Manakonline Portal</span>
-                            <span className="text-slate-400">↗</span>
+                            <span className="text-slate-400 dark:text-slate-500">↗</span>
                           </a>
                         </div>
                       </div>
@@ -1222,37 +1236,37 @@ export default function ChatInterface() {
                     {/* ═══ TAB 2: In-House Lab Capex ═══ */}
                     {calculatorTab === "capex" && (
                       <div className="space-y-3">
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
-                          <div className="font-bold text-blue-900 text-xs flex items-center gap-1.5 mb-1">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-xl">
+                          <div className="font-bold text-blue-900 dark:text-blue-300 text-xs flex items-center gap-1.5 mb-1">
                             <span>{Icons.flask}</span>
                             <span>Mandatory In-House Testing Setup</span>
                           </div>
-                          <p className="text-[11px] text-blue-700 leading-relaxed">
+                          <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed">
                             Under BIS Scheme-I (STI - Scheme of Testing & Inspection), plants must maintain on-site laboratory facilities to obtain license approval.
                           </p>
-                          <div className="mt-2 pt-2 border-t border-blue-200/60 flex justify-between items-center text-xs">
-                            <span className="font-semibold text-blue-900">Estimated Capex Budget:</span>
-                            <span className="font-extrabold text-[#0055A4]">{currentSector.inHouseCapex}</span>
+                          <div className="mt-2 pt-2 border-t border-blue-200/60 dark:border-blue-900/60 flex justify-between items-center text-xs">
+                            <span className="font-semibold text-blue-900 dark:text-blue-200">Estimated Capex Budget:</span>
+                            <span className="font-extrabold text-[#0055A4] dark:text-sky-400">{currentSector.inHouseCapex}</span>
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Required Quality Testing Apparatus for {currentSector.name}</h4>
+                          <h4 className="text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Required Quality Testing Apparatus for {currentSector.name}</h4>
                           <div className="space-y-1.5">
                             {currentSector.keyEquipment.map((eq, i) => (
-                              <div key={i} className="p-2.5 bg-white border border-gray-200 rounded-lg flex items-center justify-between hover:border-gray-300 transition-colors">
+                              <div key={i} className="p-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg flex items-center justify-between hover:border-gray-300 dark:hover:border-slate-700 transition-colors">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                                  <span className="text-[11px] font-medium text-gray-800 leading-tight">{eq.name}</span>
+                                  <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                                  <span className="text-[11px] font-medium text-gray-800 dark:text-slate-200 leading-tight">{eq.name}</span>
                                 </div>
-                                <span className="font-semibold text-slate-700 text-[11px] shrink-0 ml-2">{eq.cost}</span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300 text-[11px] shrink-0 ml-2">{eq.cost}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] text-slate-500 space-y-1">
-                          <div className="font-semibold text-slate-700">Calibration Requirement:</div>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-750 rounded-xl text-[10px] text-slate-500 dark:text-slate-400 space-y-1">
+                          <div className="font-semibold text-slate-700 dark:text-slate-300">Calibration Requirement:</div>
                           <p>All load cells, pressure gauges, incubators, and analytical balances must possess valid NABL Calibration Certificates during the BIS Officer audit.</p>
                         </div>
                       </div>
@@ -1261,9 +1275,9 @@ export default function ChatInterface() {
                     {/* ═══ TAB 3: Document Checklist ═══ */}
                     {calculatorTab === "checklist" && (
                       <div className="space-y-3">
-                        <div className="flex justify-between items-center pb-1 border-b border-gray-100">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Statutory Documents Required</span>
-                          <span className="text-[10px] font-bold text-[#0055A4]">
+                        <div className="flex justify-between items-center pb-1 border-b border-gray-100 dark:border-slate-800">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Statutory Documents Required</span>
+                          <span className="text-[10px] font-bold text-[#0055A4] dark:text-sky-400">
                             {Object.values(checkedChecklist).filter(Boolean).length} of {currentSector.checklist.length} Ready
                           </span>
                         </div>
@@ -1276,8 +1290,8 @@ export default function ChatInterface() {
                                 key={idx}
                                 className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
                                   isDone
-                                    ? "bg-emerald-50/80 border-emerald-200 text-emerald-900"
-                                    : "bg-white border-gray-200 hover:bg-slate-50 text-gray-700"
+                                    ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
+                                    : "bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200"
                                 }`}
                               >
                                 <input
@@ -1294,7 +1308,7 @@ export default function ChatInterface() {
                           })}
                         </div>
 
-                        <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[10px] text-amber-900 space-y-1">
+                        <div className="p-3 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 rounded-xl text-[10px] text-amber-900 dark:text-amber-200 space-y-1">
                           <span className="font-bold flex items-center gap-1">{Icons.alert} Verification Tip</span>
                           <p>Upload self-attested colored PDF scans on Manakonline. Applications with missing calibration records face a standard 15-day objection delay.</p>
                         </div>
@@ -1310,12 +1324,12 @@ export default function ChatInterface() {
         </div>
 
         {/* ── Footer ── */}
-        <footer className="shrink-0 border-t border-gray-200 bg-white">
+        <footer className="shrink-0 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0d131f] transition-colors">
           <div className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 space-y-2">
             {messages.length > 0 && (
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
                 {[{ icon: Icons.flask, label: "Quick Audit" }, { icon: Icons.file, label: "BIS Remediation Plan" }, { icon: Icons.doc, label: "Form V Report" }].map((a) => (
-                  <button key={a.label} onClick={() => handleSend(a.label)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-700 transition-colors shrink-0">
+                  <button key={a.label} onClick={() => handleSend(a.label)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-white transition-colors shrink-0">
                     <span className="opacity-60">{a.icon}</span> {a.label}
                   </button>
                 ))}
@@ -1324,26 +1338,26 @@ export default function ChatInterface() {
 
             {imagePreview && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative inline-block">
-                <img src={imagePreview} alt="Preview" className="h-14 w-auto rounded-lg object-cover border border-gray-200 shadow-sm" />
-                <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 bg-gray-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center shadow hover:bg-gray-700 transition-colors">×</button>
+                <img src={imagePreview} alt="Preview" className="h-14 w-auto rounded-lg object-cover border border-gray-200 dark:border-slate-700 shadow-sm" />
+                <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 bg-gray-600 dark:bg-slate-700 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center shadow hover:bg-gray-700 dark:hover:bg-slate-600 transition-colors">×</button>
               </motion.div>
             )}
 
             <div className="flex items-center gap-2">
               <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageSelect} className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} disabled={isLoading} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40 shrink-0">{Icons.attach}</button>
+              <button onClick={() => fileInputRef.current?.click()} disabled={isLoading} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors disabled:opacity-40 shrink-0">{Icons.attach}</button>
               <input
                 ref={inputRef} type="text" value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                 placeholder="Ask anything about Indian Standards, upload a product label, or verify..."
-                className="flex-1 min-w-0 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#0055A4] focus:ring-1 focus:ring-[#0055A4]/20 transition-all"
+                className="flex-1 min-w-0 px-3.5 py-2.5 bg-gray-50 dark:bg-slate-850 border border-gray-200 dark:border-slate-750 rounded-xl text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#0055A4] dark:focus:border-sky-500 focus:ring-1 focus:ring-[#0055A4]/20 transition-all"
                 disabled={isLoading}
               />
               <button
                 onClick={() => handleSend()}
                 disabled={isLoading || (!input.trim() && !imagePreview)}
-                className="p-2.5 rounded-xl bg-[#0055A4] hover:bg-[#003d7a] text-white transition-colors disabled:opacity-40 shrink-0"
+                className="p-2.5 rounded-xl bg-[#0055A4] hover:bg-[#003d7a] dark:bg-sky-600 dark:hover:bg-sky-700 text-white transition-colors disabled:opacity-40 shrink-0 cursor-pointer"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-0.5">
@@ -1355,8 +1369,8 @@ export default function ChatInterface() {
               </button>
             </div>
 
-            <p className="text-center text-[9px] text-gray-400 leading-tight">
-              P.R.A.M.A.A.N is an official AI agent under Bureau of Indian Standards, verified against gazetted <span className="font-medium">National Register</span> — <span className="font-semibold text-gray-500">1805 IS &middot; 11,400+</span>
+            <p className="text-center text-[9px] text-gray-400 dark:text-slate-500 leading-tight">
+              P.R.A.M.A.A.N is an official AI agent under Bureau of Indian Standards, verified against gazetted <span className="font-medium text-gray-500 dark:text-slate-400">National Register</span> — <span className="font-semibold text-gray-500 dark:text-slate-400">1805 IS &middot; 11,400+</span>
             </p>
           </div>
         </footer>

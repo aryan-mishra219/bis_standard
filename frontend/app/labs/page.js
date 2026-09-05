@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import ThemeToggle from "../components/ThemeToggle";
+import CustomSelect from "../components/CustomSelect";
+import { useTheme } from "../context/ThemeContext";
 
 // ─── COMPREHENSIVE PAN-INDIA BIS & NABL RECOGNIZED LABS DIRECTORY ───
 const LAB_DATABASE = [
@@ -535,16 +538,121 @@ const LAB_DATABASE = [
   }
 ];
 
+// ─── PROFESSIONAL SVG ICONS (NO EMOJIS) ───
+const Icons = {
+  mapPin: (
+    <svg className="w-3.5 h-3.5 shrink-0 text-blue-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  zap: (
+    <svg className="w-3.5 h-3.5 shrink-0 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  ),
+  shield: (
+    <svg className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  ),
+  search: (
+    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  ),
+  close: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  ),
+  printer: (
+    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+    </svg>
+  ),
+  check: (
+    <svg className="w-6 h-6 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+    </svg>
+  ),
+  info: (
+    <svg className="w-4 h-4 shrink-0 text-blue-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  compass: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" strokeWidth="2" />
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" />
+    </svg>
+  ),
+  clipboard: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+    </svg>
+  ),
+  building: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
+  globe: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" strokeWidth="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+    </svg>
+  ),
+  cpu: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <rect x="4" y="4" width="16" height="16" rx="2" strokeWidth="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 9h6v6H9zM9 1v3m6-3v3M9 20v3m6-3v3M20 9h3m-3 6h3M1 9h3m-3 6h3" />
+    </svg>
+  ),
+  droplet: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
+    </svg>
+  ),
+  smile: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" strokeWidth="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
+    </svg>
+  ),
+  battery: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <rect x="2" y="7" width="16" height="10" rx="2" strokeWidth="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 11v2M6 11l2 2-2 2" />
+    </svg>
+  ),
+  layers: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+    </svg>
+  ),
+  star: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" strokeWidth="2" />
+    </svg>
+  ),
+  flask: (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+    </svg>
+  )
+};
+
 const CATEGORIES = [
-  { id: "all", name: "All Categories", icon: "🌐" },
-  { id: "Electronics & IT (CRS)", name: "Electronics & IT (CRS)", icon: "💻" },
-  { id: "Water & Beverages", name: "Water & Beverages", icon: "💧" },
-  { id: "Toys & Safety", name: "Toys & Children Safety", icon: "🧸" },
-  { id: "EV Batteries & Auto", name: "EV Batteries & Auto", icon: "🔋" },
-  { id: "Steel & Metallurgy", name: "Steel & Metallurgy", icon: "🏗️" },
-  { id: "Hallmarking & Gold Assaying", name: "Gold Hallmarking (AHC)", icon: "✨" },
-  { id: "Cement & Building Materials", name: "Cement & Construction", icon: "🧱" },
-  { id: "Chemicals & Plastics", name: "Chemicals & Plastics", icon: "🧪" }
+  { id: "all", name: "All Categories", icon: Icons.globe },
+  { id: "Electronics & IT (CRS)", name: "Electronics & IT (CRS)", icon: Icons.cpu },
+  { id: "Water & Beverages", name: "Water & Beverages", icon: Icons.droplet },
+  { id: "Toys & Safety", name: "Toys & Children Safety", icon: Icons.smile },
+  { id: "EV Batteries & Auto", name: "EV Batteries & Auto", icon: Icons.battery },
+  { id: "Steel & Metallurgy", name: "Steel & Metallurgy", icon: Icons.building },
+  { id: "Hallmarking & Gold Assaying", name: "Gold Hallmarking (AHC)", icon: Icons.star },
+  { id: "Cement & Building Materials", name: "Cement & Construction", icon: Icons.layers },
+  { id: "Chemicals & Plastics", name: "Chemicals & Plastics", icon: Icons.flask }
 ];
 
 const TIERS = [
@@ -570,6 +678,7 @@ const CITIES = [
 ];
 
 export default function LabLocatorPage() {
+  const { theme } = useTheme();
   const [selectedLab, setSelectedLab] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -594,10 +703,44 @@ export default function LabLocatorPage() {
   });
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [inquiryRefNumber, setInquiryRefNumber] = useState("");
+  const [mapProvider, setMapProvider] = useState("google_standard"); // "google_standard", "google_satellite", "google_terrain", "dark_canvas"
 
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
+  const boundaryLayerRef = useRef(null);
   const markersRef = useRef({});
+
+  // Helper to obtain tile configuration (Esri Dark Canvas + Google Maps India Edition with full sovereign borders)
+  const getMapTileConfig = (provider, isDark) => {
+    if (provider === "google_satellite") {
+      return {
+        url: "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&gl=IN&hl=en",
+        attribution: 'Imagery &copy; <a href="https://maps.google.com" target="_blank" rel="noreferrer">Google</a> (Survey of India Compliant)',
+        maxZoom: 19
+      };
+    }
+    if (provider === "google_terrain") {
+      return {
+        url: "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}&gl=IN&hl=en",
+        attribution: 'Map &copy; <a href="https://maps.google.com" target="_blank" rel="noreferrer">Google</a> (Survey of India Compliant)',
+        maxZoom: 19
+      };
+    }
+    if (provider === "dark_canvas" || (provider === "auto" && isDark)) {
+      return {
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        attribution: '&copy; Esri, HERE, Garmin, USGS (Official Sovereign India Overlay)',
+        maxZoom: 19
+      };
+    }
+    // Default: Google Maps Standard Roadmap with Sovereign India Boundary Edition (&gl=IN)
+    return {
+      url: "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&gl=IN&hl=en",
+      attribution: 'Map data &copy; <a href="https://maps.google.com" target="_blank" rel="noreferrer">Google</a> (Survey of India Compliant Sovereign Edition)',
+      maxZoom: 19
+    };
+  };
 
   // Filtered labs
   const filteredLabs = useMemo(() => {
@@ -659,22 +802,42 @@ export default function LabLocatorPage() {
         mapInstanceRef.current = null;
       }
 
-      // Initialize map centered at India [20.5937, 78.9629]
+      // Initialize map centered at sovereign India [22.8, 79.5]
       const map = L.map(mapContainerRef.current, {
-        center: [21.5, 78.9629],
+        center: [22.8, 79.5],
         zoom: 5,
         zoomControl: true,
         scrollWheelZoom: true
       });
 
-      // Standard OpenStreetMap public tiles — 100% Free, No API Key, No Watermark
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
-        subdomains: ["a", "b", "c"],
-        maxZoom: 19
+      const isDark = theme === "dark";
+      const config = getMapTileConfig(mapProvider, isDark);
+
+      tileLayerRef.current = L.tileLayer(config.url, {
+        attribution: config.attribution,
+        maxZoom: config.maxZoom,
+        crossOrigin: true
       }).addTo(map);
 
       mapInstanceRef.current = map;
+
+      // Load official Survey of India boundary GeoJSON
+      fetch("/india-boundary.json")
+        .then((res) => res.json())
+        .then((geoData) => {
+          if (isCancelled || !mapInstanceRef.current) return;
+          const isDarkMode = theme === "dark" || mapProvider === "dark_canvas";
+          boundaryLayerRef.current = L.geoJSON(geoData, {
+            style: {
+              color: isDarkMode ? "#38bdf8" : "#0055A4",
+              weight: 2.2,
+              opacity: 0.9,
+              fillColor: isDarkMode ? "#0284c7" : "#0055A4",
+              fillOpacity: 0.03
+            }
+          }).addTo(mapInstanceRef.current);
+        })
+        .catch(() => {});
 
       // Render lab markers
       renderMarkers(L, map);
@@ -688,6 +851,42 @@ export default function LabLocatorPage() {
       }
     };
   }, []);
+
+  // Dynamically update tile layer when mapProvider or dark mode is toggled
+  useEffect(() => {
+    if (!mapInstanceRef.current || typeof window === "undefined") return;
+    import("leaflet").then((leafletModule) => {
+      const L = leafletModule.default || leafletModule;
+      const map = mapInstanceRef.current;
+      if (!map) return;
+
+      if (tileLayerRef.current) {
+        map.removeLayer(tileLayerRef.current);
+        tileLayerRef.current = null;
+      }
+
+      const isDark = theme === "dark";
+      const config = getMapTileConfig(mapProvider, isDark);
+
+      tileLayerRef.current = L.tileLayer(config.url, {
+        attribution: config.attribution,
+        maxZoom: config.maxZoom,
+        crossOrigin: true
+      }).addTo(map);
+
+      // Update boundary styling if present
+      if (boundaryLayerRef.current) {
+        const isDarkMode = theme === "dark" || mapProvider === "dark_canvas";
+        boundaryLayerRef.current.setStyle({
+          color: isDarkMode ? "#38bdf8" : "#0055A4",
+          weight: 2.2,
+          opacity: 0.9,
+          fillColor: isDarkMode ? "#0284c7" : "#0055A4",
+          fillOpacity: 0.03
+        });
+      }
+    });
+  }, [mapProvider, theme]);
 
   // Update markers when filteredLabs changes
   useEffect(() => {
@@ -730,11 +929,10 @@ export default function LabLocatorPage() {
               box-shadow: 0 4px 12px rgba(0,0,0,0.25);
               border: 2px solid #ffffff;
             ">
-              <span style="
-                transform: rotate(45deg);
-                font-size: ${isSelected ? '14px' : '12px'};
-                font-weight: 700;
-              ">🏛️</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg);">
+                <rect width="16" height="20" x="4" y="2" rx="2"/>
+                <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>
+              </svg>
             </div>
             ${isSelected ? `
               <div style="
@@ -770,17 +968,17 @@ export default function LabLocatorPage() {
           <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; line-height: 1.3;">
             ${lab.name}
           </h4>
-          <p style="font-size: 12px; color: #475569; margin: 0 0 6px 0;">📍 ${lab.city}, ${lab.state}</p>
+          <p style="font-size: 12px; color: #475569; margin: 0 0 6px 0;">${lab.city}, ${lab.state}</p>
           <div style="font-size: 11px; background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
-            <strong>⏱️ Turnaround:</strong> ${lab.turnaround}<br/>
-            <strong>🔬 Testing Scope:</strong> ${lab.categories.slice(0, 3).join(", ")}
+            <strong>Turnaround:</strong> ${lab.turnaround}<br/>
+            <strong>Testing Scope:</strong> ${lab.categories.slice(0, 3).join(", ")}
           </div>
           <div style="display: flex; gap: 6px;">
             <a href="https://www.google.com/maps/dir/?api=1&destination=${lab.lat},${lab.lng}" target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; background: #0055a4; color: #fff; text-decoration: none; font-size: 11px; font-weight: 600; padding: 6px 8px; border-radius: 6px; display: inline-block;">
-              🗺️ Directions
+              Directions
             </a>
             <button id="inquire-btn-${lab.id}" style="flex: 1; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; font-size: 11px; font-weight: 600; padding: 6px 8px; border-radius: 6px; cursor: pointer;">
-              📋 Inquire
+              Inquire
             </button>
           </div>
         </div>
@@ -868,7 +1066,7 @@ export default function LabLocatorPage() {
 
             L.marker([latitude, longitude], { icon: userIcon })
               .addTo(mapInstanceRef.current)
-              .bindPopup("<strong>📍 Your Current Location</strong>")
+              .bindPopup("<strong>Your Current Location</strong>")
               .openPopup();
           });
         }
@@ -905,14 +1103,14 @@ export default function LabLocatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
       {/* ─── HEADER / NAVIGATION BAR ─── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+      <header className="bg-white dark:bg-[#0d131f] border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-sm font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -920,20 +1118,18 @@ export default function LabLocatorPage() {
               <span>Back to Assistant</span>
             </Link>
             
-            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
 
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-blue-700 via-blue-600 to-indigo-800 flex items-center justify-center text-white shadow-sm font-bold text-sm">
-                P
-              </div>
+              <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain bg-slate-50 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 shadow-xs" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-base font-bold text-slate-900 leading-tight">P.R.A.M.A.A.N Lab Locator</h1>
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  <h1 className="text-base font-bold text-slate-900 dark:text-white leading-tight">P.R.A.M.A.A.N Lab Locator</h1>
+                  <span className="bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                     ILMS Portal
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 hidden md:block">
+                <p className="text-xs text-slate-500 dark:text-slate-400 hidden md:block">
                   BIS Central, Regional & NABL Recognized Laboratory Directory & Geo-Routing
                 </p>
               </div>
@@ -945,10 +1141,10 @@ export default function LabLocatorPage() {
             <button
               onClick={handleLocateMe}
               disabled={locatingUser}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs"
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-xs cursor-pointer"
               title="Find labs closest to your GPS coordinates"
             >
-              <svg className={`w-3.5 h-3.5 text-blue-600 ${locatingUser ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-3.5 h-3.5 text-blue-600 dark:text-sky-400 ${locatingUser ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -956,31 +1152,34 @@ export default function LabLocatorPage() {
             </button>
 
             {/* Mobile View Toggle */}
-            <div className="flex sm:hidden border border-slate-200 rounded-lg overflow-hidden">
+            <div className="flex sm:hidden border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode("list")}
-                className={`px-2.5 py-1 text-xs font-medium ${viewMode === "list" ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}
+                className={`px-2.5 py-1 text-xs font-medium ${viewMode === "list" ? "bg-blue-600 text-white" : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}
               >
                 List
               </button>
               <button
                 onClick={() => setViewMode("map")}
-                className={`px-2.5 py-1 text-xs font-medium ${viewMode === "map" ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}
+                className={`px-2.5 py-1 text-xs font-medium ${viewMode === "map" ? "bg-blue-600 text-white" : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}
               >
                 Map
               </button>
             </div>
 
-            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span><strong>{filteredLabs.length}</strong> Labs Active</span>
             </div>
+
+            {/* Theme Toggle */}
+            <ThemeToggle showLabel={false} />
           </div>
         </div>
       </header>
 
       {/* ─── SEARCH & FILTER BAR ─── */}
-      <section className="bg-white border-b border-slate-200 shadow-xs">
+      <section className="bg-white dark:bg-[#0d131f] border-b border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
             {/* Search Input */}
@@ -990,7 +1189,7 @@ export default function LabLocatorPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by Lab Name, City, IS Standard (e.g. IS 14543, IS 13252), or Product..."
-                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50/50"
+                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50/50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -998,58 +1197,55 @@ export default function LabLocatorPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  title="Clear search"
                 >
-                  ✕
+                  {Icons.close}
                 </button>
               )}
             </div>
 
             {/* City Dropdown */}
-            <div className="w-full md:w-44">
-              <select
+            <div className="w-full md:w-48">
+              <CustomSelect
                 value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                aria-label="Filter by City / Region"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                onChange={setSelectedCity}
+                options={CITIES.map((c) => ({ value: c, label: c }))}
+                placeholder="All Cities"
+                size="md"
+                ariaLabel="Filter by City / Region"
+              />
             </div>
 
             {/* Tier Dropdown */}
-            <div className="w-full md:w-56">
-              <select
+            <div className="w-full md:w-60">
+              <CustomSelect
                 value={selectedTier}
-                onChange={(e) => setSelectedTier(e.target.value)}
-                aria-label="Filter by Laboratory Classification"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                {TIERS.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
+                onChange={setSelectedTier}
+                options={TIERS.map((t) => ({ value: t.id, label: t.name, subtitle: t.description }))}
+                placeholder="All Laboratory Tiers"
+                size="md"
+                ariaLabel="Filter by Laboratory Classification"
+              />
             </div>
           </div>
 
           {/* Product Category Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 no-scrollbar text-xs">
-            <span className="text-slate-400 font-semibold uppercase text-[10px] pr-1 shrink-0">Scope:</span>
+            <span className="text-slate-400 dark:text-slate-500 font-semibold uppercase text-[10px] pr-1 shrink-0">Scope:</span>
             {CATEGORIES.map((cat) => {
               const isActive = selectedCategory === cat.id;
               return (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1 rounded-full whitespace-nowrap font-medium transition flex items-center gap-1 shrink-0 ${
+                  className={`px-3 py-1.5 rounded-full whitespace-nowrap font-medium transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     isActive
-                      ? "bg-blue-700 text-white shadow-xs font-semibold"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      ? "bg-blue-700 dark:bg-sky-600 text-white shadow-xs font-semibold"
+                      : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
                   }`}
                 >
-                  <span>{cat.icon}</span>
+                  <span className="shrink-0">{cat.icon}</span>
                   <span>{cat.name}</span>
                 </button>
               );
@@ -1060,23 +1256,23 @@ export default function LabLocatorPage() {
 
       {/* ─── MAIN CONTENT: SPLIT VIEW (LAB CARDS ON LEFT, LEAFLET MAP ON RIGHT) ─── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-150">
           
           {/* LEFT COLUMN: LAB DIRECTORY CARDS (5 Cols on Large screens) */}
           <div className={`lg:col-span-5 flex flex-col ${viewMode === "map" ? "hidden lg:flex" : "flex"}`}>
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-slate-800">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Recognized Test Facilities ({filteredLabs.length})
               </p>
               <div className="flex items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 text-blue-700 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-blue-600"></span> BIS Owned
+                <span className="inline-flex items-center gap-1 text-blue-700 dark:text-sky-400 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-sky-500"></span> BIS Owned
                 </span>
-                <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600"></span> Govt NABL
+                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-500"></span> Govt NABL
                 </span>
-                <span className="inline-flex items-center gap-1 text-amber-700 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-amber-600"></span> Recognized Pvt
+                <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-500"></span> Recognized Pvt
                 </span>
               </div>
             </div>
@@ -1084,12 +1280,12 @@ export default function LabLocatorPage() {
             {/* Scrollable Lab Cards Container */}
             <div className="space-y-3 overflow-y-auto pr-1 flex-1 max-h-[calc(100vh-250px)]">
               {filteredLabs.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center my-6">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-xl mx-auto mb-3">
-                    🔍
+                <div className="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center my-6">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center mx-auto mb-3">
+                    {Icons.search}
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800">No laboratories match your filter criteria</h3>
-                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-white">No laboratories match your filter criteria</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                     Try clearing your search keyword, resetting category filters, or selecting "All Cities".
                   </p>
                   <button
@@ -1099,7 +1295,7 @@ export default function LabLocatorPage() {
                       setSelectedTier("all");
                       setSelectedCity("All Cities");
                     }}
-                    className="mt-4 px-4 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    className="mt-4 px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition cursor-pointer"
                   >
                     Reset All Filters
                   </button>
@@ -1112,10 +1308,10 @@ export default function LabLocatorPage() {
                       key={lab.id}
                       id={`lab-card-${lab.id}`}
                       onClick={() => handleSelectLab(lab)}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer bg-white relative ${
+                      className={`p-4 rounded-xl border transition-all cursor-pointer bg-white dark:bg-[#111827] relative ${
                         isSelected
-                          ? "border-blue-600 shadow-md ring-2 ring-blue-100 bg-blue-50/20"
-                          : "border-slate-200 hover:border-slate-300 hover:shadow-xs"
+                          ? "border-blue-600 dark:border-sky-500 shadow-md ring-2 ring-blue-100 dark:ring-sky-950 bg-blue-50/20 dark:bg-sky-950/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs"
                       }`}
                     >
                       {/* Top Badges */}
@@ -1123,29 +1319,32 @@ export default function LabLocatorPage() {
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${lab.tierColor}`}>
                           {lab.tierBadge}
                         </span>
-                        <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                        <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                           {lab.code}
                         </span>
                       </div>
 
                       {/* Lab Name & Location */}
-                      <h3 className="text-sm font-bold text-slate-900 leading-snug group-hover:text-blue-600">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-snug group-hover:text-blue-600 dark:group-hover:text-sky-400">
                         {lab.name}
                       </h3>
-                      <p className="text-xs text-slate-600 flex items-center gap-1 mt-1">
-                        <span>📍</span> {lab.address}
+                      <p className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1 mt-1">
+                        {Icons.mapPin}
+                        <span>{lab.address}</span>
                       </p>
 
                       {/* Meta Information Bar */}
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-slate-400 block text-[10px] font-semibold uppercase">Turnaround Time</span>
-                          <span className="text-slate-700 font-medium">⚡ {lab.turnaround}</span>
+                          <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-semibold uppercase">Turnaround Time</span>
+                          <span className="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1">
+                            {Icons.zap} {lab.turnaround}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px] font-semibold uppercase">Accreditation</span>
-                          <span className="text-slate-700 font-medium truncate block" title={lab.accreditation}>
-                            🛡️ {lab.accreditation.split("(")[0]}
+                          <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-semibold uppercase">Accreditation</span>
+                          <span className="text-slate-700 dark:text-slate-300 font-medium truncate flex items-center gap-1" title={lab.accreditation}>
+                            {Icons.shield} {lab.accreditation.split("(")[0]}
                           </span>
                         </div>
                       </div>
@@ -1153,22 +1352,22 @@ export default function LabLocatorPage() {
                       {/* Standards Tags */}
                       <div className="mt-2.5 flex flex-wrap gap-1">
                         {lab.standards.map((std) => (
-                          <span key={std} className="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded">
+                          <span key={std} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-semibold px-2 py-0.5 rounded">
                             {std}
                           </span>
                         ))}
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${lab.lat},${lab.lng}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition"
+                          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition"
                         >
-                          <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           </svg>
                           <span>Directions</span>
@@ -1179,7 +1378,7 @@ export default function LabLocatorPage() {
                             e.stopPropagation();
                             openInquiryModal(lab);
                           }}
-                          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition shadow-xs"
+                          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg bg-blue-700 hover:bg-blue-800 dark:bg-sky-600 dark:hover:bg-sky-700 text-white transition shadow-xs cursor-pointer"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1195,29 +1394,88 @@ export default function LabLocatorPage() {
           </div>
 
           {/* RIGHT COLUMN: INTERACTIVE GOOGLE-MAPS STYLE LEAFLET MAP (7 Cols on Large screens) */}
-          <div className={`lg:col-span-7 flex flex-col rounded-2xl border border-slate-200 overflow-hidden bg-slate-100 shadow-sm relative ${viewMode === "list" ? "hidden lg:flex" : "flex"}`}>
+          <div className={`lg:col-span-7 flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-sm relative ${viewMode === "list" ? "hidden lg:flex" : "flex"}`}>
             
             {/* Map Container */}
-            <div ref={mapContainerRef} className="w-full flex-1 min-h-[550px] z-0" />
+            <div ref={mapContainerRef} className="w-full flex-1 min-h-137.5 z-0" />
 
-            {/* Map Overlay Floating Info Pill */}
-            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm text-xs font-semibold text-slate-700 z-10 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
-              <span>Interactive ILMS Map (Pan & Zoom)</span>
+            {/* Map Overlay Floating Controls */}
+            <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 z-10 pointer-events-none">
+              {/* Survey of India (SOI) Compliance Indicator */}
+              <div className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-[11px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                <span className="hidden sm:inline">Survey of India (SOI) Compliant Sovereign Map</span>
+                <span className="sm:hidden">SOI India Map</span>
+              </div>
+
+              {/* Map Layer Switcher */}
+              <div className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setMapProvider("google_standard")}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                    mapProvider === "google_standard"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                  title="Google Maps India Edition (Full Sovereign Territory)"
+                >
+                  Google Map
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapProvider("google_satellite")}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                    mapProvider === "google_satellite"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                  title="Google Satellite Hybrid Imagery"
+                >
+                  Satellite
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapProvider("google_terrain")}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer hidden md:inline-block ${
+                    mapProvider === "google_terrain"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                  title="Google Physical Topography"
+                >
+                  Terrain
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapProvider("dark_canvas")}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                    mapProvider === "dark_canvas"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                  title="High-Contrast Dark Basemap"
+                >
+                  Dark
+                </button>
+              </div>
             </div>
 
             {/* Selected Lab Floating Bottom Drawer on Map */}
             {selectedLab && (
-              <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md rounded-xl p-3.5 border border-slate-200 shadow-lg z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="absolute bottom-3 left-3 right-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 shadow-lg z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${selectedLab.tierColor}`}>
                       {selectedLab.tier}
                     </span>
-                    <span className="text-xs text-slate-500 font-mono">{selectedLab.code}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{selectedLab.code}</span>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 truncate mt-0.5">{selectedLab.name}</h4>
-                  <p className="text-xs text-slate-600 truncate">📍 {selectedLab.address}</p>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5">{selectedLab.name}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 truncate flex items-center gap-1">
+                    {Icons.mapPin}
+                    <span>{selectedLab.address}</span>
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
@@ -1225,15 +1483,17 @@ export default function LabLocatorPage() {
                     href={`https://www.google.com/maps/dir/?api=1&destination=${selectedLab.lat},${selectedLab.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition text-center"
+                    className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition text-center flex items-center justify-center gap-1.5"
                   >
-                    🗺️ Turn-by-Turn GPS
+                    {Icons.compass}
+                    <span>Turn-by-Turn GPS</span>
                   </a>
                   <button
                     onClick={() => openInquiryModal(selectedLab)}
-                    className="flex-1 sm:flex-none px-3.5 py-1.5 text-xs font-bold rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition text-center"
+                    className="flex-1 sm:flex-none px-3.5 py-1.5 text-xs font-bold rounded-lg bg-blue-700 hover:bg-blue-800 dark:bg-sky-600 dark:hover:bg-sky-700 text-white transition text-center cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    📋 Book Sample Test
+                    {Icons.clipboard}
+                    <span>Book Sample Test</span>
                   </button>
                 </div>
               </div>
@@ -1245,37 +1505,37 @@ export default function LabLocatorPage() {
       {/* ─── SAMPLE TEST BOOKING / INQUIRY MODAL ─── */}
       {inquiryModalOpen && inquiryLab && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#111827] rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
             {inquirySubmitted ? (
               <div className="text-center py-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-4">
-                  ✓
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-4">
+                  {Icons.check}
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">Sample Test Requisition Initiated!</h3>
-                <p className="text-sm text-slate-600 mt-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Sample Test Requisition Initiated!</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
                   Your testing inquiry has been routed to <strong>{inquiryLab.name}</strong> under BIS ILMS testing guidelines.
                 </p>
 
-                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1.5">
+                <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-1.5">
                   <div className="flex justify-between">
-                    <span className="text-slate-500 font-semibold">Requisition Reference:</span>
-                    <span className="font-mono font-bold text-blue-700">{inquiryRefNumber}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">Requisition Reference:</span>
+                    <span className="font-mono font-bold text-blue-700 dark:text-sky-400">{inquiryRefNumber}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 font-semibold">Testing Facility:</span>
-                    <span className="font-medium text-slate-800">{inquiryLab.shortName}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">Testing Facility:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{inquiryLab.shortName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 font-semibold">Standard Code:</span>
-                    <span className="font-medium text-slate-800">{inquiryForm.standardCode}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">Standard Code:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{inquiryForm.standardCode}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 font-semibold">Sample Dispatch Instructions:</span>
-                    <span className="font-medium text-slate-800">{inquiryForm.sampleQty}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">Sample Dispatch Instructions:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{inquiryForm.sampleQty}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 font-semibold">Estimated TAT:</span>
-                    <span className="font-medium text-emerald-700">{inquiryLab.turnaround}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">Estimated TAT:</span>
+                    <span className="font-medium text-emerald-700 dark:text-emerald-400">{inquiryLab.turnaround}</span>
                   </div>
                 </div>
 
@@ -1284,13 +1544,14 @@ export default function LabLocatorPage() {
                     onClick={() => {
                       window.print();
                     }}
-                    className="flex-1 px-4 py-2 text-xs font-semibold border border-slate-300 rounded-xl hover:bg-slate-50 text-slate-700"
+                    className="flex-1 px-4 py-2 text-xs font-semibold border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    🖨️ Print Dispatch Challan
+                    {Icons.printer}
+                    <span>Print Dispatch Challan</span>
                   </button>
                   <button
                     onClick={() => setInquiryModalOpen(false)}
-                    className="flex-1 px-4 py-2 text-xs font-bold bg-blue-700 text-white rounded-xl hover:bg-blue-800"
+                    className="flex-1 px-4 py-2 text-xs font-bold bg-blue-700 hover:bg-blue-800 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-xl cursor-pointer"
                   >
                     Done
                   </button>
@@ -1298,123 +1559,126 @@ export default function LabLocatorPage() {
               </div>
             ) : (
               <div>
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900">BIS ILMS Sample Testing Inquiry</h3>
-                    <p className="text-xs text-slate-500">Destination: {inquiryLab.name} ({inquiryLab.code})</p>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">BIS ILMS Sample Testing Inquiry</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Destination: {inquiryLab.name} ({inquiryLab.code})</p>
                   </div>
                   <button
                     onClick={() => setInquiryModalOpen(false)}
-                    className="text-slate-400 hover:text-slate-600 text-lg p-1"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer"
+                    title="Close"
                   >
-                    ✕
+                    {Icons.close}
                   </button>
                 </div>
 
                 <form onSubmit={handleInquirySubmit} className="mt-4 space-y-3.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Company / Applicant Name *</label>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Company / Applicant Name *</label>
                       <input
                         type="text"
                         required
                         value={inquiryForm.companyName}
                         onChange={(e) => setInquiryForm({ ...inquiryForm, companyName: e.target.value })}
                         placeholder="e.g. Apex Industrial Solutions Ltd"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Contact Person & Designation *</label>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Person & Designation *</label>
                       <input
                         type="text"
                         required
                         value={inquiryForm.contactPerson}
                         onChange={(e) => setInquiryForm({ ...inquiryForm, contactPerson: e.target.value })}
                         placeholder="e.g. Rahul Sharma (QA Head)"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Official Email *</label>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Official Email *</label>
                       <input
                         type="email"
                         required
                         value={inquiryForm.email}
                         onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
                         placeholder="e.g. rahul@company.com"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Phone / Mobile No. *</label>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone / Mobile No. *</label>
                       <input
                         type="tel"
                         required
                         value={inquiryForm.phone}
                         onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })}
                         placeholder="+91 98765 43210"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Product Description *</label>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Product Description *</label>
                       <input
                         type="text"
                         required
                         value={inquiryForm.productName}
                         onChange={(e) => setInquiryForm({ ...inquiryForm, productName: e.target.value })}
                         placeholder="e.g. 20L Packaged Water Jar"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Target IS Standard *</label>
-                      <select
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target IS Standard *</label>
+                      <CustomSelect
                         value={inquiryForm.standardCode}
-                        onChange={(e) => setInquiryForm({ ...inquiryForm, standardCode: e.target.value })}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                      >
-                        {inquiryLab.standards.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                        <option value="Other">Other Standard (Specify in notes)</option>
-                      </select>
+                        onChange={(val) => setInquiryForm({ ...inquiryForm, standardCode: val })}
+                        options={[
+                          ...(inquiryLab?.standards || []).map((s) => ({ value: s, label: s })),
+                          { value: "Other", label: "Other Standard (Specify in notes)" },
+                        ]}
+                        placeholder="Select IS Standard"
+                        size="md"
+                        ariaLabel="Target IS Standard"
+                      />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Testing Batch Notes / Sample Details</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Testing Batch Notes / Sample Details</label>
                     <textarea
                       rows={2}
                       value={inquiryForm.notes}
                       onChange={(e) => setInquiryForm({ ...inquiryForm, notes: e.target.value })}
                       placeholder="Mention any specific testing parameters, witness testing requirements, or deadline..."
-                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
 
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 leading-relaxed">
-                    💡 <strong>ILMS Sample Note:</strong> Testing fee challan and sample dispatch token will be issued upon laboratory acceptance. Please ensure production samples are factory sealed and labeled with Batch ID.
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400">{Icons.info}</span>
+                    <span><strong>ILMS Sample Note:</strong> Testing fee challan and sample dispatch token will be issued upon laboratory acceptance. Please ensure production samples are factory sealed and labeled with Batch ID.</span>
                   </div>
 
                   <div className="pt-2 flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setInquiryModalOpen(false)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                      className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white rounded-xl transition shadow-xs"
+                      className="px-5 py-2 text-xs font-bold bg-blue-700 hover:bg-blue-800 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-xl transition shadow-xs cursor-pointer"
                     >
                       Submit Requisition Inquiry →
                     </button>
