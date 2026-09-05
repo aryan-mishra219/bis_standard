@@ -276,11 +276,11 @@ def build_pdf_report_bytes(report_data: dict) -> bytes:
     fee = report_data["cost_breakdown"]
     fee_table_data = [
         ["Fee / Component Name", "Amount (with MSME Concessions)"],
-        ["Application Fee", fee.get("application_fee", "₹1,000")],
-        ["NABL Lab Sample Testing Fee", fee.get("lab_testing_fee", "₹15,000")],
-        ["BIS Inspection Charges", fee.get("inspection_fee", "₹7,000")],
-        ["Marking License Fee", fee.get("marking_fee", "₹20,000")],
-        ["TOTAL ESTIMATED INVESTMENT", fee.get("total_estimated", "₹43,000")]
+        ["Application Fee", str(fee.get("application_fee", "Rs. 1,000")).replace("₹", "Rs. ")],
+        ["NABL Lab Sample Testing Fee", str(fee.get("lab_testing_fee", "Rs. 15,000")).replace("₹", "Rs. ")],
+        ["BIS Inspection Charges", str(fee.get("inspection_fee", "Rs. 7,000")).replace("₹", "Rs. ")],
+        ["Marking License Fee", str(fee.get("marking_fee", "Rs. 20,000")).replace("₹", "Rs. ")],
+        ["TOTAL ESTIMATED INVESTMENT", str(fee.get("total_estimated", "Rs. 43,000")).replace("₹", "Rs. ")]
     ]
     
     t_fee = Table(fee_table_data, colWidths=[300, 230])
@@ -405,15 +405,15 @@ def build_fee_quotation_pdf_bytes(q: dict) -> bytes:
     story.append(Paragraph("<b>2. Itemized Statutory Fee Schedule (Payable to Bureau of Indian Standards)</b>", h2_style))
     fee_data = [
         ["Cost Component", "Statutory Description", "Amount (INR)"],
-        ["1. Application Processing Fee", "One-time non-refundable statutory filing fee", f"₹{q.get('application_fee', 1000):,}"],
-        ["2. Factory Audit & Inspection", "Auditor man-days fee for technical plant verification", f"₹{q.get('inspection_fee', 7000):,}"],
-        ["3. Independent Lab Sample Testing", "NABL/BIS testing for initial type test compliance", f"₹{q.get('lab_testing_fee', 18000):,}"],
-        ["4. Annual Minimum Marking Fee", "Base statutory marking fee before MSME subsidies", f"₹{q.get('base_marking_fee', 45000):,}"],
-        ["   Less: MSME / Startup Concession", f"Official Government subsidy for {q.get('enterprise_scale', 'Micro')}", f"-₹{q.get('discount_marking_amount', 0):,}"],
-        ["   Net Annual Marking Fee", "Statutory marking fee payable for the first year", f"₹{q.get('net_marking_fee', 9000):,}"],
-        ["Statutory Subtotal (excl. GST)", "Sum of application, inspection, testing & net marking fee", f"₹{q.get('subtotal', 35000):,}"],
-        ["Statutory GST (18.0%)", "Goods & Services Tax on certification services", f"₹{q.get('gst_amount', 6300):,}"],
-        ["TOTAL ESTIMATED OUTFLOW", "Total initial statutory investment payable to BIS", f"₹{q.get('total_payable', 41300):,}"]
+        ["1. Application Processing Fee", "One-time non-refundable statutory filing fee", f"Rs. {q.get('application_fee', 1000):,}"],
+        ["2. Factory Audit & Inspection", "Auditor man-days fee for technical plant verification", f"Rs. {q.get('inspection_fee', 7000):,}"],
+        ["3. Independent Lab Sample Testing", "NABL/BIS testing for initial type test compliance", f"Rs. {q.get('lab_testing_fee', 18000):,}"],
+        ["4. Annual Minimum Marking Fee", "Base statutory marking fee before MSME subsidies", f"Rs. {q.get('base_marking_fee', 45000):,}"],
+        ["   Less: MSME / Startup Concession", f"Official Government subsidy for {q.get('enterprise_scale', 'Micro')}", f"-Rs. {q.get('discount_marking_amount', 0):,}"],
+        ["   Net Annual Marking Fee", "Statutory marking fee payable for the first year", f"Rs. {q.get('net_marking_fee', 9000):,}"],
+        ["Statutory Subtotal (excl. GST)", "Sum of application, inspection, testing & net marking fee", f"Rs. {q.get('subtotal', 35000):,}"],
+        ["Statutory GST (18.0%)", "Goods & Services Tax on certification services", f"Rs. {q.get('gst_amount', 6300):,}"],
+        ["TOTAL ESTIMATED OUTFLOW", "Total initial statutory investment payable to BIS", f"Rs. {q.get('total_payable', 41300):,}"]
     ]
     t_fee = Table(fee_data, colWidths=[160, 260, 120])
     t_fee.setStyle(TableStyle([
@@ -439,8 +439,9 @@ def build_fee_quotation_pdf_bytes(q: dict) -> bytes:
     story.append(Spacer(1, 8))
     
     # 3. In-House Plant Testing Equipment & Capex
+    clean_capex = str(q.get('in_house_lab_capex', 'Rs. 1,50,000 - Rs. 3,50,000')).replace('₹', 'Rs. ')
     story.append(Paragraph("<b>3. In-House Quality Testing Facilities (Required for Plant Approval)</b>", h2_style))
-    story.append(Paragraph(f"To obtain an ISI Mark, manufacturer must install mandatory in-house testing facilities. Estimated Capex: <b>{q.get('in_house_lab_capex', '₹1,50,000 - ₹3,50,000')}</b>.", body_style))
+    story.append(Paragraph(f"To obtain an ISI Mark, manufacturer must install mandatory in-house testing facilities. Estimated Capex: <b>{clean_capex}</b>.", body_style))
     story.append(Spacer(1, 4))
     
     # 4. Mandatory Document Checklist
