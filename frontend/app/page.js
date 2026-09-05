@@ -1120,7 +1120,7 @@ export default function ChatInterface() {
                         </label>
 
                         {/* Annual Production Volume Slider */}
-                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 space-y-1.5">
+                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
                           <div className="flex justify-between items-center text-[11px]">
                             <span className="font-semibold text-slate-700 dark:text-slate-300">Estimated Annual Volume</span>
                             <span className="font-bold text-[#0055A4] dark:text-sky-400">{Number(productionVolume).toLocaleString("en-IN")} <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">{currentSector.unitName}</span></span>
@@ -1265,7 +1265,7 @@ export default function ChatInterface() {
                           </div>
                         </div>
 
-                        <div className="p-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-750 rounded-xl text-[10px] text-slate-500 dark:text-slate-400 space-y-1">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] text-slate-500 dark:text-slate-400 space-y-1">
                           <div className="font-semibold text-slate-700 dark:text-slate-300">Calibration Requirement:</div>
                           <p>All load cells, pressure gauges, incubators, and analytical balances must possess valid NABL Calibration Certificates during the BIS Officer audit.</p>
                         </div>
@@ -1324,13 +1324,13 @@ export default function ChatInterface() {
         </div>
 
         {/* ── Footer ── */}
-        <footer className="shrink-0 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0d131f] transition-colors">
+        <footer className="shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1120] transition-colors">
           <div className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 space-y-2">
             {messages.length > 0 && (
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
                 {[{ icon: Icons.flask, label: "Quick Audit" }, { icon: Icons.file, label: "BIS Remediation Plan" }, { icon: Icons.doc, label: "Form V Report" }].map((a) => (
-                  <button key={a.label} onClick={() => handleSend(a.label)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-white transition-colors shrink-0">
-                    <span className="opacity-60">{a.icon}</span> {a.label}
+                  <button key={a.label} onClick={() => handleSend(a.label)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0 cursor-pointer">
+                    <span className="opacity-70">{a.icon}</span> {a.label}
                   </button>
                 ))}
               </div>
@@ -1338,26 +1338,35 @@ export default function ChatInterface() {
 
             {imagePreview && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative inline-block">
-                <img src={imagePreview} alt="Preview" className="h-14 w-auto rounded-lg object-cover border border-gray-200 dark:border-slate-700 shadow-sm" />
-                <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 bg-gray-600 dark:bg-slate-700 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center shadow hover:bg-gray-700 dark:hover:bg-slate-600 transition-colors">×</button>
+                <img src={imagePreview} alt="Preview" className="h-14 w-auto rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-sm" />
+                <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 bg-slate-600 dark:bg-slate-700 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center shadow hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors cursor-pointer">×</button>
               </motion.div>
             )}
 
             <div className="flex items-center gap-2">
               <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageSelect} className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} disabled={isLoading} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors disabled:opacity-40 shrink-0">{Icons.attach}</button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                title="Attach product label image"
+                className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40 shrink-0 cursor-pointer"
+              >
+                {Icons.attach}
+              </button>
               <input
-                ref={inputRef} type="text" value={input}
+                ref={inputRef}
+                type="text"
+                value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                 placeholder="Ask anything about Indian Standards, upload a product label, or verify..."
-                className="flex-1 min-w-0 px-3.5 py-2.5 bg-gray-50 dark:bg-slate-850 border border-gray-200 dark:border-slate-750 rounded-xl text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#0055A4] dark:focus:border-sky-500 focus:ring-1 focus:ring-[#0055A4]/20 transition-all"
+                className="flex-1 min-w-0 px-3.5 py-2.5 bg-slate-100 dark:bg-[#111827] border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 caret-[#0055A4] dark:caret-sky-400 focus:outline-none focus:bg-white dark:focus:bg-[#0f172a] focus:border-[#0055A4] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0055A4]/20 transition-all font-medium"
                 disabled={isLoading}
               />
               <button
                 onClick={() => handleSend()}
                 disabled={isLoading || (!input.trim() && !imagePreview)}
-                className="p-2.5 rounded-xl bg-[#0055A4] hover:bg-[#003d7a] dark:bg-sky-600 dark:hover:bg-sky-700 text-white transition-colors disabled:opacity-40 shrink-0 cursor-pointer"
+                className="p-2.5 rounded-xl bg-[#0055A4] hover:bg-[#003d7a] dark:bg-sky-600 dark:hover:bg-sky-500 text-white transition-colors disabled:opacity-40 shrink-0 cursor-pointer shadow-xs"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-0.5">
@@ -1369,8 +1378,8 @@ export default function ChatInterface() {
               </button>
             </div>
 
-            <p className="text-center text-[9px] text-gray-400 dark:text-slate-500 leading-tight">
-              P.R.A.M.A.A.N is an official AI agent under Bureau of Indian Standards, verified against gazetted <span className="font-medium text-gray-500 dark:text-slate-400">National Register</span> — <span className="font-semibold text-gray-500 dark:text-slate-400">1805 IS &middot; 11,400+</span>
+            <p className="text-center text-[9px] text-slate-400 dark:text-slate-500 leading-tight">
+              P.R.A.M.A.A.N is an official AI agent under Bureau of Indian Standards, verified against gazetted <span className="font-medium text-slate-500 dark:text-slate-400">National Register</span> — <span className="font-semibold text-slate-500 dark:text-slate-400">1805 IS &middot; 11,400+</span>
             </p>
           </div>
         </footer>
