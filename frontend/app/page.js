@@ -48,9 +48,9 @@ function SkeletonLine({ w = "100%", h = "12px", cls = "" }) {
 
 function ChatSkeleton() {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 justify-start">
-      <div className="w-8 h-8 rounded-lg skeleton shrink-0 mt-0.5" />
-      <div className="flex-1 max-w-[78%] p-4 rounded-2xl rounded-tl-sm bg-white border border-gray-100 shadow-sm space-y-2.5">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 justify-start w-full">
+      <div className="w-8 h-8 rounded-lg skeleton shrink-0 mt-1" />
+      <div className="flex-1 min-w-0 p-5 rounded-2xl rounded-tl-sm bg-white border border-gray-100 shadow-xs space-y-3">
         <SkeletonLine w="35%" h="14px" />
         <SkeletonLine w="92%" h="10px" />
         <SkeletonLine w="78%" h="10px" />
@@ -262,14 +262,14 @@ const actionTabs = [
 /* ─── Markdown Renderers ─── */
 const mdComponents = {
   table: ({ node, ...props }) => (
-    <div className="overflow-x-auto my-3 max-w-full border border-gray-200 rounded-lg shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm bg-white" {...props} />
+    <div className="my-3.5 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-xs">
+      <table className="min-w-full w-full divide-y divide-gray-200 text-xs sm:text-[13px] text-gray-700 bg-white" {...props} />
     </div>
   ),
-  thead: ({ node, ...props }) => <thead className="bg-slate-50 text-slate-700 font-semibold" {...props} />,
-  th: ({ node, ...props }) => <th className="px-3 py-2 sm:px-4 sm:py-2.5 text-left font-semibold border-b border-gray-200 whitespace-nowrap text-xs" {...props} />,
-  td: ({ node, ...props }) => <td className="px-3 py-1.5 sm:px-4 sm:py-2 border-b border-gray-50 text-gray-700 text-xs" {...props} />,
-  tr: ({ node, ...props }) => <tr className="hover:bg-slate-50/50 transition-colors" {...props} />,
+  thead: ({ node, ...props }) => <thead className="bg-slate-50 text-slate-800 font-bold tracking-wide" {...props} />,
+  th: ({ node, ...props }) => <th className="px-4 py-2.5 sm:px-5 sm:py-3 text-left font-bold border-b border-gray-200 text-slate-900 text-xs" {...props} />,
+  td: ({ node, ...props }) => <td className="px-4 py-2 sm:px-5 sm:py-2.5 border-b border-gray-100 text-gray-700 text-xs sm:text-[13px]" {...props} />,
+  tr: ({ node, ...props }) => <tr className="hover:bg-blue-50/30 transition-colors" {...props} />,
 };
 
 /* ════════════════════════════════════════════════════════════════════ */
@@ -581,23 +581,23 @@ export default function ChatInterface() {
           {/* Chat Area */}
           <main className="flex-1 overflow-y-auto min-w-0">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center px-4 sm:px-6">
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="space-y-6 max-w-xl w-full">
+              <div className="flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 lg:px-8 py-8">
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="space-y-6 max-w-3xl lg:max-w-4xl w-full">
                   <div className="space-y-2.5">
-                    <img src="/bis-logo.png" alt="BIS" className="w-14 h-14 rounded-2xl object-contain shadow-lg mb-1 bg-white p-1 mx-auto" />
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">How can I help you with Indian Standards today?</h2>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto">Verify BIS certifications, audit product compliance, locate testing labs, or explore Indian standards.</p>
+                    <img src="/bis-logo.png" alt="BIS" className="w-16 h-16 rounded-2xl object-contain shadow-lg mb-1 bg-white p-1.5 mx-auto" />
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">How can I help you with Indian Standards today?</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">Verify BIS certifications, audit product compliance, calculate MSME marking fees, or explore Indian standards.</p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                     {starterPrompts.map((p, i) => (
                       <motion.button
                         key={i}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06, duration: 0.3 }}
                         onClick={() => handleSend(p.text)}
-                        className="flex items-start gap-3 p-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all duration-150 text-left group"
+                        className="flex items-start gap-3.5 p-4 bg-white border border-gray-200 rounded-xl hover:border-[#0055A4]/40 hover:shadow-md transition-all duration-150 text-left group cursor-pointer"
                       >
                         <span className="text-gray-400 mt-0.5 shrink-0 group-hover:text-[#0055A4] transition-colors">{p.icon}</span>
-                        <span className="text-[12px] text-gray-600 leading-snug group-hover:text-gray-800 transition-colors">{p.text}</span>
+                        <span className="text-[13px] text-gray-700 leading-snug group-hover:text-gray-900 font-medium transition-colors">{p.text}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -612,20 +612,20 @@ export default function ChatInterface() {
                 </motion.div>
               </div>
             ) : (
-              <div className="max-w-3xl mx-auto px-3 sm:px-5 py-4 sm:py-5 space-y-4">
+              <div className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
                 <AnimatePresence initial={false}>
                   {messages.map((msg, idx) => (
-                    <motion.div key={idx} variants={msgAnim} initial="hidden" animate="visible" layout className={`flex ${msg.role === "user" ? "justify-end" : "gap-2.5 justify-start"}`}>
+                    <motion.div key={idx} variants={msgAnim} initial="hidden" animate="visible" layout className={`flex ${msg.role === "user" ? "justify-end" : "gap-3 justify-start w-full"}`}>
 
                       {/* Assistant avatar */}
                       {msg.role === "assistant" && (
-                        <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain mt-0.5 shrink-0 bg-white p-0.5" />
+                        <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain mt-1 shrink-0 bg-white p-0.5 border border-gray-200/80 shadow-xs" />
                       )}
 
-                      <div className={`max-w-[85%] sm:max-w-[78%] overflow-hidden ${
+                      <div className={`overflow-hidden ${
                         msg.role === "user"
-                          ? "bg-[#0055A4] text-white rounded-2xl rounded-br-sm px-4 py-2.5"
-                          : "bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm"
+                          ? "max-w-[85%] sm:max-w-[70%] bg-[#0055A4] text-white rounded-2xl rounded-br-sm px-4 py-2.5 shadow-sm"
+                          : "flex-1 min-w-0 bg-white border border-gray-200/90 rounded-2xl rounded-tl-sm px-5 py-4 shadow-xs"
                       }`}>
 
                         {msg.image && (
@@ -1097,7 +1097,7 @@ export default function ChatInterface() {
 
         {/* ── Footer ── */}
         <footer className="shrink-0 border-t border-gray-200 bg-white">
-          <div className="max-w-3xl mx-auto px-3 sm:px-5 py-2 sm:py-2.5 space-y-1.5">
+          <div className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 space-y-2">
             {messages.length > 0 && (
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
                 {[{ icon: Icons.flask, label: "Quick Audit" }, { icon: Icons.file, label: "BIS Remediation Plan" }, { icon: Icons.doc, label: "Form V Report" }].map((a) => (
