@@ -290,12 +290,19 @@ export default function ChatInterface() {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const typingTimerRef = useRef(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, []);
 
   useEffect(() => { scrollToBottom(); }, [messages, isLoading, scrollToBottom]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearInterval(typingTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -328,6 +335,88 @@ export default function ChatInterface() {
 
   const removeImage = () => { setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = ""; };
 
+  /* ─── Streaming Typewriter Animation (ChatGPT-Style) ─── */
+  const streamAssistantResponse = (data) => {
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+
+    const fullText = (data.answer || "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+
+    if (!fullText) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "",
+          sources: data.sources || [],
+          actions_taken: data.actions_taken || [],
+          process_timeline: data.process_timeline || null,
+          compliance_report: data.compliance_report || null,
+          is_error: false,
+          isTyping: false
+        }
+      ]);
+      return;
+    }
+
+    const totalLength = fullText.length;
+    // Adaptive chunking: short texts type softly, long reports type briskly like ChatGPT
+    const chunkSize = totalLength > 1500 ? 14 : totalLength > 600 ? 8 : totalLength > 200 ? 4 : 2;
+    const intervalMs = 16; // 60 FPS smooth updates
+
+    let currentLength = Math.min(chunkSize, totalLength);
+
+    // Append new assistant message with initial chunk
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: fullText.slice(0, currentLength),
+        sources: data.sources || [],
+        actions_taken: data.actions_taken || [],
+        process_timeline: data.process_timeline || null,
+        compliance_report: data.compliance_report || null,
+        is_error: false,
+        isTyping: true
+      }
+    ]);
+
+    typingTimerRef.current = setInterval(() => {
+      currentLength += chunkSize;
+
+      if (currentLength >= totalLength) {
+        clearInterval(typingTimerRef.current);
+        typingTimerRef.current = null;
+        setMessages((prev) => {
+          if (prev.length === 0) return prev;
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            content: fullText,
+            isTyping: false
+          };
+          return updated;
+        });
+      } else {
+        const nextContent = fullText.slice(0, currentLength);
+        setMessages((prev) => {
+          if (prev.length === 0) return prev;
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            content: nextContent,
+            isTyping: true
+          };
+          return updated;
+        });
+      }
+    }, intervalMs);
+  };
+
   /* ─── API ─── */
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -336,7 +425,17 @@ export default function ChatInterface() {
     if (!query.trim() && !imagePreview) return;
     setLastQuery(query);
     const currentImage = imagePreview;
-    setMessages((prev) => [...prev, { role: "user", content: query || "Analyzed attached image for BIS Standards.", image: currentImage }]);
+
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+
+    setMessages((prev) => [
+      ...prev.map((m) => ({ ...m, isTyping: false })),
+      { role: "user", content: query || "Analyzed attached image for BIS Standards.", image: currentImage }
+    ]);
+
     setInput(""); setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setIsLoading(true);
@@ -346,14 +445,16 @@ export default function ChatInterface() {
         body: JSON.stringify({ query: query || "What BIS standard or information is in this image?", language, simplify, image_base64: currentImage }),
       });
       const data = await res.json();
+      setIsLoading(false);
       if (res.ok) {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.answer, sources: data.sources, actions_taken: data.actions_taken || [], process_timeline: data.process_timeline || null, compliance_report: data.compliance_report || null, is_error: false }]);
+        streamAssistantResponse(data);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.detail || "Server Error: Could not fetch response.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: data.detail || "Server Error: Could not fetch response.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null, isTyping: false }]);
       }
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error: Unable to reach P.R.A.M.A.A.N backend.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
-    } finally { setIsLoading(false); }
+      setIsLoading(false);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Network error: Unable to reach P.R.A.M.A.A.N backend.", is_error: true, failed_query: query, sources: [], actions_taken: [], process_timeline: null, compliance_report: null, isTyping: false }]);
+    }
   };
 
   const handleFeedback = (idx, type) => setFeedbackState((prev) => ({ ...prev, [idx]: type }));
@@ -488,8 +589,15 @@ export default function ChatInterface() {
             </div>
           </div>
           <button
-            onClick={() => { setMessages([]); setMobileSidebar(false); }}
-            className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#1e3a5f] hover:bg-[#254b77] text-white text-[11px] font-semibold transition-colors duration-200 border border-white/6"
+            onClick={() => {
+              if (typingTimerRef.current) {
+                clearInterval(typingTimerRef.current);
+                typingTimerRef.current = null;
+              }
+              setMessages([]);
+              setMobileSidebar(false);
+            }}
+            className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#1e3a5f] hover:bg-[#254b77] text-white text-[11px] font-semibold transition-colors duration-200 border border-white/6 cursor-pointer"
           >
             {Icons.plus}
             <span>New Consultation</span>
@@ -681,107 +789,142 @@ export default function ChatInterface() {
                                   </div>
                                 )}
 
-                                {/* Markdown */}
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
-                                  {msg.content ? msg.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim() : ""}
-                                </ReactMarkdown>
+                                {/* Markdown with Typing Cursor */}
+                                <div className="relative">
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+                                    {msg.content ? msg.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim() : ""}
+                                  </ReactMarkdown>
+                                  {msg.isTyping && (
+                                    <span className="inline-block w-2 h-4 ml-1 bg-[#0055A4] rounded-xs animate-pulse align-middle" />
+                                  )}
+                                </div>
 
-                                {/* Process Timeline */}
-                                {msg.process_timeline?.length > 0 && (
-                                  <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                                    <div className="flex items-center gap-1.5 mb-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                                      {Icons.mapPin}
-                                      <span>Process Navigator — {msg.process_timeline.length} Steps</span>
-                                    </div>
-                                    <div className="relative pl-7 border-l-2 border-slate-300 space-y-3">
-                                      {msg.process_timeline.map((step, i) => (
-                                        <div key={i} className="relative">
-                                          <div className="absolute -left-5.75 top-0 w-6 h-6 rounded-full bg-[#0055A4] text-white text-[10px] font-bold flex items-center justify-center ring-[3px] ring-slate-50">{step.step_number || i + 1}</div>
-                                          <div className="bg-white p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
-                                            <h4 className="text-xs font-semibold text-gray-900">{step.title}</h4>
-                                            <p className="text-[11px] text-gray-500 mt-0.5">{step.description}</p>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
+                                {/* Skip Typing Quick Action */}
+                                {msg.isTyping && (
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <button
+                                      onClick={() => {
+                                        if (typingTimerRef.current) {
+                                          clearInterval(typingTimerRef.current);
+                                          typingTimerRef.current = null;
+                                        }
+                                        setMessages((prev) => {
+                                          const updated = [...prev];
+                                          const lastIdx = updated.length - 1;
+                                          if (lastIdx >= 0) {
+                                            updated[lastIdx] = { ...updated[lastIdx], isTyping: false };
+                                          }
+                                          return updated;
+                                        });
+                                      }}
+                                      className="text-[10px] text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1"
+                                    >
+                                      <span>⚡ Show full response</span>
+                                    </button>
                                   </div>
                                 )}
 
-                                {/* Compliance Report */}
-                                {msg.compliance_report && (
-                                  <div className="mt-4 p-4 bg-[#0f172a] text-white rounded-xl border border-slate-700/50">
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-700/50">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-blue-300">{Icons.shield}</span>
-                                        <div>
-                                          <h3 className="text-[11px] font-semibold tracking-wide uppercase text-blue-200">Compliance Readiness Report</h3>
-                                          <p className="text-[10px] text-slate-400">ID: <span className="font-mono font-semibold text-white">{msg.compliance_report.report_id}</span> | {msg.compliance_report.product_name}</p>
+                                {/* Attachments (Revealed smoothly upon typing completion) */}
+                                {!msg.isTyping && (
+                                  <>
+                                    {/* Process Timeline */}
+                                    {msg.process_timeline?.length > 0 && (
+                                      <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                        <div className="flex items-center gap-1.5 mb-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                          {Icons.mapPin}
+                                          <span>Process Navigator — {msg.process_timeline.length} Steps</span>
                                         </div>
-                                      </div>
-                                      <span className="px-2 py-0.5 bg-amber-400 text-slate-900 font-bold text-[9px] rounded-full uppercase tracking-wider">{msg.compliance_report.risk_level}</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-3 text-xs">
-                                      <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
-                                        <div className="font-semibold text-slate-400 uppercase text-[9px] mb-1">Applicable Standard</div>
-                                        <div className="font-semibold text-white text-xs">{msg.compliance_report.primary_standard}</div>
-                                        <div className="text-slate-300 text-[11px]">{msg.compliance_report.standard_name}</div>
-                                        <div className="text-emerald-400 font-medium mt-1 text-[11px] flex items-center gap-1">{Icons.bookmark} {msg.compliance_report.scheme_type}</div>
-                                      </div>
-                                      <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
-                                        <div className="font-semibold text-slate-400 uppercase text-[9px] mb-1">Timeline & MSME Estimate</div>
-                                        <div className="font-semibold text-amber-300 text-xs flex items-center gap-1">{Icons.clock} {msg.compliance_report.estimated_timeline}</div>
-                                        <div className="text-emerald-400 font-bold text-sm mt-0.5">{msg.compliance_report.cost_breakdown?.total_estimated || "₹43,000"}</div>
-                                        <div className="text-[9px] text-slate-400 mt-0.5">Includes concession for {msg.compliance_report.enterprise_scale}</div>
-                                      </div>
-                                    </div>
-
-                                    {msg.compliance_report.compliance_gaps?.length > 0 && (
-                                      <div className="mb-3">
-                                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Compliance Gaps</div>
-                                        <div className="space-y-1">
-                                          {msg.compliance_report.compliance_gaps.map((gap, i) => (
-                                            <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-200 bg-white/4 p-2 rounded border border-white/4">
-                                              <span className="text-amber-400 shrink-0 mt-px">{Icons.alert}</span>
-                                              <span>{gap}</span>
+                                        <div className="relative pl-7 border-l-2 border-slate-300 space-y-3">
+                                          {msg.process_timeline.map((step, i) => (
+                                            <div key={i} className="relative">
+                                              <div className="absolute -left-5.75 top-0 w-6 h-6 rounded-full bg-[#0055A4] text-white text-[10px] font-bold flex items-center justify-center ring-[3px] ring-slate-50">{step.step_number || i + 1}</div>
+                                              <div className="bg-white p-2.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
+                                                <h4 className="text-xs font-semibold text-gray-900">{step.title}</h4>
+                                                <p className="text-[11px] text-gray-500 mt-0.5">{step.description}</p>
+                                              </div>
                                             </div>
                                           ))}
                                         </div>
                                       </div>
                                     )}
 
-                                    <div className="pt-2 flex justify-end">
-                                      <a href={`${API_BASE_URL}/api/download-report/${msg.compliance_report.report_id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors">
-                                        {Icons.download} Download PDF ({msg.compliance_report.report_id}.pdf)
-                                      </a>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Sources */}
-                                {msg.sources?.length > 0 && (
-                                  <div className="mt-3 pt-2.5 border-t border-gray-100">
-                                    <p className="text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Sources Referenced</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {msg.sources.map((src, i) => (
-                                        <div key={i} className="group relative text-[10px] bg-slate-50 text-slate-500 px-2 py-1 rounded cursor-default hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1">
-                                          <span className="text-slate-400">{Icons.doc}</span>
-                                          {src.document} (Pg. {src.page})
-                                          <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-56 p-2.5 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl z-10 whitespace-normal leading-relaxed">&ldquo;{src.content_snippet}...&rdquo;</div>
+                                    {/* Compliance Report */}
+                                    {msg.compliance_report && (
+                                      <div className="mt-4 p-4 bg-[#0f172a] text-white rounded-xl border border-slate-700/50">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-700/50">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-blue-300">{Icons.shield}</span>
+                                            <div>
+                                              <h3 className="text-[11px] font-semibold tracking-wide uppercase text-blue-200">Compliance Readiness Report</h3>
+                                              <p className="text-[10px] text-slate-400">ID: <span className="font-mono font-semibold text-white">{msg.compliance_report.report_id}</span> | {msg.compliance_report.product_name}</p>
+                                            </div>
+                                          </div>
+                                          <span className="px-2 py-0.5 bg-amber-400 text-slate-900 font-bold text-[9px] rounded-full uppercase tracking-wider">{msg.compliance_report.risk_level}</span>
                                         </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
 
-                                {/* Feedback */}
-                                <div className="mt-2.5 pt-2 flex items-center justify-between border-t border-gray-100">
-                                  <span className="text-[10px] text-gray-400">Was this helpful?</span>
-                                  <div className="flex items-center gap-0.5">
-                                    <button onClick={() => handleFeedback(idx, "up")} className={`p-1.5 rounded-md transition-colors ${feedbackState[idx] === "up" ? "text-emerald-600 bg-emerald-50" : "text-gray-400 hover:bg-gray-100"}`}>{Icons.thumbUp}</button>
-                                    <button onClick={() => handleFeedback(idx, "down")} className={`p-1.5 rounded-md transition-colors ${feedbackState[idx] === "down" ? "text-red-600 bg-red-50" : "text-gray-400 hover:bg-gray-100"}`}>{Icons.thumbDown}</button>
-                                  </div>
-                                </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-3 text-xs">
+                                          <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                                            <div className="font-semibold text-slate-400 uppercase text-[9px] mb-1">Applicable Standard</div>
+                                            <div className="font-semibold text-white text-xs">{msg.compliance_report.primary_standard}</div>
+                                            <div className="text-slate-300 text-[11px]">{msg.compliance_report.standard_name}</div>
+                                            <div className="text-emerald-400 font-medium mt-1 text-[11px] flex items-center gap-1">{Icons.bookmark} {msg.compliance_report.scheme_type}</div>
+                                          </div>
+                                          <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                                            <div className="font-semibold text-slate-400 uppercase text-[9px] mb-1">Timeline & MSME Estimate</div>
+                                            <div className="font-semibold text-amber-300 text-xs flex items-center gap-1">{Icons.clock} {msg.compliance_report.estimated_timeline}</div>
+                                            <div className="text-emerald-400 font-bold text-sm mt-0.5">{msg.compliance_report.cost_breakdown?.total_estimated || "₹43,000"}</div>
+                                            <div className="text-[9px] text-slate-400 mt-0.5">Includes concession for {msg.compliance_report.enterprise_scale}</div>
+                                          </div>
+                                        </div>
+
+                                        {msg.compliance_report.compliance_gaps?.length > 0 && (
+                                          <div className="mb-3">
+                                            <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Compliance Gaps</div>
+                                            <div className="space-y-1">
+                                              {msg.compliance_report.compliance_gaps.map((gap, i) => (
+                                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-200 bg-white/4 p-2 rounded border border-white/4">
+                                                  <span className="text-amber-400 shrink-0 mt-px">{Icons.alert}</span>
+                                                  <span>{gap}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        <div className="pt-2 flex justify-end">
+                                          <a href={`${API_BASE_URL}/api/download-report/${msg.compliance_report.report_id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                                            {Icons.download} Download PDF ({msg.compliance_report.report_id}.pdf)
+                                          </a>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Sources */}
+                                    {msg.sources?.length > 0 && (
+                                      <div className="mt-3 pt-2.5 border-t border-gray-100">
+                                        <p className="text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Sources Referenced</p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {msg.sources.map((src, i) => (
+                                            <div key={i} className="group relative text-[10px] bg-slate-50 text-slate-500 px-2 py-1 rounded cursor-default hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1">
+                                              <span className="text-slate-400">{Icons.doc}</span>
+                                              {src.document} (Pg. {src.page})
+                                              <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-56 p-2.5 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl z-10 whitespace-normal leading-relaxed">&ldquo;{src.content_snippet}...&rdquo;</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Feedback */}
+                                    <div className="mt-2.5 pt-2 flex items-center justify-between border-t border-gray-100">
+                                      <span className="text-[10px] text-gray-400">Was this helpful?</span>
+                                      <div className="flex items-center gap-0.5">
+                                        <button onClick={() => handleFeedback(idx, "up")} className={`p-1 rounded hover:bg-gray-100 transition-colors ${feedbackState[idx] === "up" ? "text-[#0055A4]" : "text-gray-400 hover:text-gray-600"}`} title="Helpful">{Icons.thumbUp}</button>
+                                        <button onClick={() => handleFeedback(idx, "down")} className={`p-1 rounded hover:bg-gray-100 transition-colors ${feedbackState[idx] === "down" ? "text-red-500" : "text-gray-400 hover:text-gray-600"}`} title="Not helpful">{Icons.thumbDown}</button>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
                               </>
                             )}
                           </div>
