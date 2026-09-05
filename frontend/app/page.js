@@ -502,11 +502,25 @@ export default function ChatInterface() {
           {strategyPortals.map((p) => (
             <button
               key={p.id}
-              onClick={() => { if (p.id === "fee") setShowFeePanel(!showFeePanel); else handleSend(`Open ${p.label}`); setMobileSidebar(false); }}
-              className="w-full flex items-center gap-2.5 px-2.5 py-1.75 rounded-md text-[11px] hover:bg-white/6 hover:text-slate-200 transition-colors text-left"
+              onClick={() => {
+                if (p.id === "fee") {
+                  setShowFeePanel(!showFeePanel);
+                } else if (p.id === "lab") {
+                  window.location.href = "/labs";
+                } else {
+                  handleSend(`Open ${p.label}`);
+                }
+                setMobileSidebar(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-1.75 rounded-md text-[11px] hover:bg-white/6 hover:text-slate-200 transition-colors text-left cursor-pointer"
             >
               <span className="text-slate-500 shrink-0">{p.icon}</span>
               <span className="truncate">{p.label}</span>
+              {p.id === "lab" && (
+                <span className="ml-auto text-[9px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.2 rounded">
+                  MAP
+                </span>
+              )}
             </button>
           ))}
         </div>
