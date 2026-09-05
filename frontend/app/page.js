@@ -7,6 +7,8 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [lastQuery, setLastQuery] = useState("");
+  const [feedbackState, setFeedbackState] = useState({});
 
   // Phase 5 Hackathon "Wow" Features States
   const [language, setLanguage] = useState("English");
@@ -78,6 +80,7 @@ export default function ChatInterface() {
     const query = overrideQuery || input;
     if (!query.trim() && !imagePreview) return;
 
+    setLastQuery(query);
     const currentImage = imagePreview;
 
     const userMsg = { 
@@ -115,17 +118,49 @@ export default function ChatInterface() {
             sources: data.sources,
             actions_taken: data.actions_taken || [],
             process_timeline: data.process_timeline || null,
-            compliance_report: data.compliance_report || null
+            compliance_report: data.compliance_report || null,
+            is_error: false
           }
         ]);
       } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: "Error: Could not fetch response.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
+        setMessages((prev) => [
+          ...prev, 
+          { 
+            role: "assistant", 
+            content: data.detail || "Server Error: Could not fetch response.", 
+            is_error: true,
+            failed_query: query,
+            sources: [], 
+            actions_taken: [], 
+            process_timeline: null, 
+            compliance_report: null 
+          }
+        ]);
       }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please check backend connection.", sources: [], actions_taken: [], process_timeline: null, compliance_report: null }]);
+      setMessages((prev) => [
+        ...prev, 
+        { 
+          role: "assistant", 
+          content: "Network error: Unable to reach BIS AI Assistant backend.", 
+          is_error: true,
+          failed_query: query,
+          sources: [], 
+          actions_taken: [], 
+          process_timeline: null, 
+          compliance_report: null 
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFeedback = (idx, type) => {
+    setFeedbackState((prev) => ({
+      ...prev,
+      [idx]: type
+    }));
   };
 
   const starterPrompts = [
@@ -280,158 +315,202 @@ export default function ChatInterface() {
                   )}
                   {msg.role === "assistant" ? (
                     <div className="prose prose-sm max-w-none text-gray-700 break-words">
-                      {/* Phase 7 Agentic Action Pills */}
-                      {msg.actions_taken && msg.actions_taken.length > 0 && (
-                        <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
-                          {msg.actions_taken.map((action, i) => (
-                            <div 
-                              key={i} 
-                              className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-50 text-amber-800 border border-amber-300 rounded-full text-[10px] sm:text-xs font-semibold shadow-sm max-w-full truncate"
-                            >
-                              <span className="text-amber-600">⚙️</span>
-                              <span className="truncate">Action: {action}</span>
-                            </div>
-                          ))}
+                      {/* ChatGPT-style Error Card with Retry Button */}
+                      {msg.is_error ? (
+                        <div className="p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-800 text-xs space-y-2">
+                          <div className="flex items-center gap-2 font-bold text-red-900">
+                            <span>⚠️</span>
+                            <span>{msg.content}</span>
+                          </div>
+                          <p className="text-[11px] text-red-700">The connection was interrupted. Click retry to resend your query.</p>
+                          <button 
+                            onClick={() => handleSend(msg.failed_query || lastQuery)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md font-bold text-xs shadow transition active:scale-95 cursor-pointer"
+                          >
+                            <span>🔄</span>
+                            <span>Retry Request</span>
+                          </button>
                         </div>
-                      )}
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          table: ({ node, ...props }) => (
-                            <div className="overflow-x-auto my-3 max-w-full border border-gray-200 rounded-lg shadow-sm">
-                              <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm bg-white" {...props} />
-                            </div>
-                          ),
-                          thead: ({ node, ...props }) => (
-                            <thead className="bg-blue-50 text-[#0055A4] font-semibold" {...props} />
-                          ),
-                          th: ({ node, ...props }) => (
-                            <th className="px-3 py-2 sm:px-4 sm:py-2.5 text-left font-bold border-b border-gray-200 whitespace-nowrap" {...props} />
-                          ),
-                          td: ({ node, ...props }) => (
-                            <td className="px-3 py-1.5 sm:px-4 sm:py-2 border-b border-gray-100 text-gray-700" {...props} />
-                          ),
-                          tr: ({ node, ...props }) => (
-                            <tr className="hover:bg-blue-50/50 transition-colors" {...props} />
-                          ),
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
-
-                      {/* Phase 8 Dynamic Process Timeline Navigator */}
-                      {msg.process_timeline && msg.process_timeline.length > 0 && (
-                        <div className="mt-4 mb-3 p-3.5 sm:p-5 bg-linear-to-br from-blue-50/90 to-indigo-50/70 border border-blue-200 rounded-xl shadow-sm overflow-hidden">
-                          <div className="flex items-center gap-1.5 mb-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0055A4]">
-                            <span className="text-sm sm:text-base">📍</span>
-                            <span>Interactive Process Navigator ({msg.process_timeline.length} Steps)</span>
-                          </div>
-
-                          <div className="relative pl-6 sm:pl-8 border-l-2 border-[#0055A4]/40 space-y-4 sm:space-y-5 my-2">
-                            {msg.process_timeline.map((step, idx) => (
-                              <div key={idx} className="relative group">
-                                {/* Numbered Step Circle */}
-                                <div className="absolute -left-9 sm:-left-11 top-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#0055A4] text-white text-[10px] sm:text-xs font-bold flex items-center justify-center shadow-md ring-2 sm:ring-4 ring-white group-hover:scale-110 transition-transform">
-                                  {step.step_number || idx + 1}
+                      ) : (
+                        <>
+                          {/* Phase 7 Agentic Action Pills */}
+                          {msg.actions_taken && msg.actions_taken.length > 0 && (
+                            <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
+                              {msg.actions_taken.map((action, i) => (
+                                <div 
+                                  key={i} 
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-50 text-amber-800 border border-amber-300 rounded-full text-[10px] sm:text-xs font-semibold shadow-sm max-w-full truncate"
+                                >
+                                  <span className="text-amber-600">⚙️</span>
+                                  <span className="truncate">Action: {action}</span>
                                 </div>
+                              ))}
+                            </div>
+                          )}
 
-                                {/* Step Title & Description */}
-                                <div className="bg-white/95 p-3 sm:p-3.5 rounded-lg border border-blue-100 shadow-sm hover:border-blue-300 transition-all">
-                                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 flex items-center gap-1.5">
-                                    {step.title}
-                                  </h4>
-                                  <p className="text-[11px] sm:text-xs text-gray-600 mt-1 leading-relaxed">
-                                    {step.description}
-                                  </p>
+                          {/* Markdown Response Content (Cleaned of <think> tags) */}
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              table: ({ node, ...props }) => (
+                                <div className="overflow-x-auto my-3 max-w-full border border-gray-200 rounded-lg shadow-sm">
+                                  <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm bg-white" {...props} />
                                 </div>
+                              ),
+                              thead: ({ node, ...props }) => (
+                                <thead className="bg-blue-50 text-[#0055A4] font-semibold" {...props} />
+                              ),
+                              th: ({ node, ...props }) => (
+                                <th className="px-3 py-2 sm:px-4 sm:py-2.5 text-left font-bold border-b border-gray-200 whitespace-nowrap" {...props} />
+                              ),
+                              td: ({ node, ...props }) => (
+                                <td className="px-3 py-1.5 sm:px-4 sm:py-2 border-b border-gray-100 text-gray-700" {...props} />
+                              ),
+                              tr: ({ node, ...props }) => (
+                                <tr className="hover:bg-blue-50/50 transition-colors" {...props} />
+                              ),
+                            }}
+                          >
+                            {msg.content ? msg.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim() : ""}
+                          </ReactMarkdown>
+
+                          {/* Phase 8 Dynamic Process Timeline Navigator */}
+                          {msg.process_timeline && msg.process_timeline.length > 0 && (
+                            <div className="mt-4 mb-3 p-3.5 sm:p-5 bg-linear-to-br from-blue-50/90 to-indigo-50/70 border border-blue-200 rounded-xl shadow-sm overflow-hidden">
+                              <div className="flex items-center gap-1.5 mb-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0055A4]">
+                                <span className="text-sm sm:text-base">📍</span>
+                                <span>Interactive Process Navigator ({msg.process_timeline.length} Steps)</span>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
 
-                      {/* Phase 9 Proactive Compliance Gap Report Banner & Card */}
-                      {msg.compliance_report && (
-                        <div className="mt-4 mb-3 p-3.5 sm:p-5 bg-linear-to-br from-slate-900 to-[#003366] text-white rounded-xl shadow-lg border border-blue-900 overflow-hidden">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-blue-800">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg sm:text-xl">🛡️</span>
-                              <div>
-                                <h3 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-blue-200">
-                                  Proactive Compliance Readiness Report
-                                </h3>
-                                <p className="text-[10px] sm:text-[11px] text-blue-300">
-                                  ID: <span className="font-mono font-bold text-white">{msg.compliance_report.report_id}</span> | Product: {msg.compliance_report.product_name}
-                                </p>
-                              </div>
-                            </div>
-                            <span className="px-2.5 py-0.5 sm:py-1 bg-amber-400 text-blue-950 font-extrabold text-[9px] sm:text-[10px] rounded-full uppercase tracking-wider shadow self-start sm:self-auto">
-                              {msg.compliance_report.risk_level}
-                            </span>
-                          </div>
+                              <div className="relative pl-6 sm:pl-8 border-l-2 border-[#0055A4]/40 space-y-4 sm:space-y-5 my-2">
+                                {msg.process_timeline.map((step, idx) => (
+                                  <div key={idx} className="relative group">
+                                    {/* Numbered Step Circle */}
+                                    <div className="absolute -left-9 sm:-left-11 top-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#0055A4] text-white text-[10px] sm:text-xs font-bold flex items-center justify-center shadow-md ring-2 sm:ring-4 ring-white group-hover:scale-110 transition-transform">
+                                      {step.step_number || idx + 1}
+                                    </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3 text-xs">
-                            <div className="bg-white/10 p-2.5 sm:p-3 rounded-lg border border-white/10 space-y-1">
-                              <div className="font-semibold text-blue-200 uppercase text-[9px] sm:text-[10px]">Applicable Standard & Scheme</div>
-                              <div className="font-bold text-white text-xs sm:text-sm">{msg.compliance_report.primary_standard}</div>
-                              <div className="text-blue-100 text-[11px]">{msg.compliance_report.standard_name}</div>
-                              <div className="text-emerald-300 font-medium pt-1 text-[11px]">📌 {msg.compliance_report.scheme_type}</div>
-                            </div>
-
-                            <div className="bg-white/10 p-2.5 sm:p-3 rounded-lg border border-white/10 space-y-1">
-                              <div className="font-semibold text-blue-200 uppercase text-[9px] sm:text-[10px]">Timeline & MSME Budget Estimate</div>
-                              <div className="font-bold text-amber-300 text-xs sm:text-sm">⏱️ {msg.compliance_report.estimated_timeline}</div>
-                              <div className="text-emerald-400 font-bold text-sm sm:text-base">
-                                💰 {msg.compliance_report.cost_breakdown?.total_estimated || "₹43,000"}
-                              </div>
-                              <div className="text-[9px] sm:text-[10px] text-blue-200">Includes Concession for {msg.compliance_report.enterprise_scale} Enterprise</div>
-                            </div>
-                          </div>
-
-                          {/* Gap Checklist */}
-                          {msg.compliance_report.compliance_gaps && msg.compliance_report.compliance_gaps.length > 0 && (
-                            <div className="mb-3">
-                              <div className="text-[10px] sm:text-[11px] font-bold text-blue-200 uppercase tracking-wider mb-1.5">Identified Compliance Gaps & Action Checklist:</div>
-                              <div className="space-y-1.5">
-                                {msg.compliance_report.compliance_gaps.map((gap, i) => (
-                                  <div key={i} className="flex items-start gap-1.5 text-[11px] sm:text-xs text-blue-50 bg-black/20 p-2 rounded border border-white/5">
-                                    <span className="text-amber-400 font-bold shrink-0">⚠️</span>
-                                    <span>{gap}</span>
+                                    {/* Step Title & Description */}
+                                    <div className="bg-white/95 p-3 sm:p-3.5 rounded-lg border border-blue-100 shadow-sm hover:border-blue-300 transition-all">
+                                      <h4 className="text-xs sm:text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                                        {step.title}
+                                      </h4>
+                                      <p className="text-[11px] sm:text-xs text-gray-600 mt-1 leading-relaxed">
+                                        {step.description}
+                                      </p>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
                             </div>
                           )}
 
-                          {/* PDF Download Button */}
-                          <div className="pt-2 flex justify-stretch sm:justify-end">
-                            <a 
-                              href={`${API_BASE_URL}/api/download-report/${msg.compliance_report.report_id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-extrabold shadow-md transition transform active:scale-95"
-                            >
-                              <span>📄</span>
-                              <span className="truncate">Download Official PDF Report ({msg.compliance_report.report_id}.pdf)</span>
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {msg.sources && msg.sources.length > 0 && (
-                        <div className="mt-3 pt-2.5 border-t border-gray-100">
-                          <p className="text-[10px] sm:text-xs font-semibold text-gray-500 mb-1.5">SOURCES REFERENCED:</p>
-                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                            {msg.sources.map((src, i) => (
-                              <div key={i} className="group relative text-[11px] sm:text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded cursor-pointer hover:bg-blue-50 hover:text-[#0055A4] border border-gray-200">
-                                📚 {src.document} (Pg. {src.page})
-                                <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-56 sm:w-64 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg z-10 whitespace-normal">
-                                  "{src.content_snippet}..."
+                          {/* Phase 9 Proactive Compliance Gap Report Banner & Card */}
+                          {msg.compliance_report && (
+                            <div className="mt-4 mb-3 p-3.5 sm:p-5 bg-linear-to-br from-slate-900 to-[#003366] text-white rounded-xl shadow-lg border border-blue-900 overflow-hidden">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-blue-800">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg sm:text-xl">🛡️</span>
+                                  <div>
+                                    <h3 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-blue-200">
+                                      Proactive Compliance Readiness Report
+                                    </h3>
+                                    <p className="text-[10px] sm:text-[11px] text-blue-300">
+                                      ID: <span className="font-mono font-bold text-white">{msg.compliance_report.report_id}</span> | Product: {msg.compliance_report.product_name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <span className="px-2.5 py-0.5 sm:py-1 bg-amber-400 text-blue-950 font-extrabold text-[9px] sm:text-[10px] rounded-full uppercase tracking-wider shadow self-start sm:self-auto">
+                                  {msg.compliance_report.risk_level}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3 text-xs">
+                                <div className="bg-white/10 p-2.5 sm:p-3 rounded-lg border border-white/10 space-y-1">
+                                  <div className="font-semibold text-blue-200 uppercase text-[9px] sm:text-[10px]">Applicable Standard & Scheme</div>
+                                  <div className="font-bold text-white text-xs sm:text-sm">{msg.compliance_report.primary_standard}</div>
+                                  <div className="text-blue-100 text-[11px]">{msg.compliance_report.standard_name}</div>
+                                  <div className="text-emerald-300 font-medium pt-1 text-[11px]">📌 {msg.compliance_report.scheme_type}</div>
+                                </div>
+
+                                <div className="bg-white/10 p-2.5 sm:p-3 rounded-lg border border-white/10 space-y-1">
+                                  <div className="font-semibold text-blue-200 uppercase text-[9px] sm:text-[10px]">Timeline & MSME Budget Estimate</div>
+                                  <div className="font-bold text-amber-300 text-xs sm:text-sm">⏱️ {msg.compliance_report.estimated_timeline}</div>
+                                  <div className="text-emerald-400 font-bold text-sm sm:text-base">
+                                    💰 {msg.compliance_report.cost_breakdown?.total_estimated || "₹43,000"}
+                                  </div>
+                                  <div className="text-[9px] sm:text-[10px] text-blue-200">Includes Concession for {msg.compliance_report.enterprise_scale} Enterprise</div>
                                 </div>
                               </div>
-                            ))}
+
+                              {/* Gap Checklist */}
+                              {msg.compliance_report.compliance_gaps && msg.compliance_report.compliance_gaps.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="text-[10px] sm:text-[11px] font-bold text-blue-200 uppercase tracking-wider mb-1.5">Identified Compliance Gaps & Action Checklist:</div>
+                                  <div className="space-y-1.5">
+                                    {msg.compliance_report.compliance_gaps.map((gap, i) => (
+                                      <div key={i} className="flex items-start gap-1.5 text-[11px] sm:text-xs text-blue-50 bg-black/20 p-2 rounded border border-white/5">
+                                        <span className="text-amber-400 font-bold shrink-0">⚠️</span>
+                                        <span>{gap}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* PDF Download Button */}
+                              <div className="pt-2 flex justify-stretch sm:justify-end">
+                                <a 
+                                  href={`${API_BASE_URL}/api/download-report/${msg.compliance_report.report_id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-extrabold shadow-md transition transform active:scale-95"
+                                >
+                                  <span>📄</span>
+                                  <span className="truncate">Download Official PDF Report ({msg.compliance_report.report_id}.pdf)</span>
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Sources Cited */}
+                          {msg.sources && msg.sources.length > 0 && (
+                            <div className="mt-3 pt-2.5 border-t border-gray-100">
+                              <p className="text-[10px] sm:text-xs font-semibold text-gray-500 mb-1.5">SOURCES REFERENCED:</p>
+                              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                {msg.sources.map((src, i) => (
+                                  <div key={i} className="group relative text-[11px] sm:text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded cursor-pointer hover:bg-blue-50 hover:text-[#0055A4] border border-gray-200">
+                                    📚 {src.document} (Pg. {src.page})
+                                    <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-56 sm:w-64 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg z-10 whitespace-normal">
+                                      "{src.content_snippet}..."
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Interactive User Feedback Buttons */}
+                          <div className="mt-3 pt-2 flex items-center justify-between border-t border-gray-100 text-xs text-gray-400">
+                            <span className="text-[10px]">Was this response helpful?</span>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => handleFeedback(idx, 'up')}
+                                className={`p-1 rounded hover:bg-gray-100 transition cursor-pointer ${feedbackState[idx] === 'up' ? 'text-emerald-600 font-bold bg-emerald-50' : 'text-gray-400'}`}
+                                title="Helpful"
+                              >
+                                👍 {feedbackState[idx] === 'up' && <span className="text-[10px] ml-1">Helpful</span>}
+                              </button>
+                              <button 
+                                onClick={() => handleFeedback(idx, 'down')}
+                                className={`p-1 rounded hover:bg-gray-100 transition cursor-pointer ${feedbackState[idx] === 'down' ? 'text-red-600 font-bold bg-red-50' : 'text-gray-400'}`}
+                                title="Not Helpful"
+                              >
+                                👎 {feedbackState[idx] === 'down' && <span className="text-[10px] ml-1">Reported</span>}
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        </>
                       )}
                     </div>
                   ) : (

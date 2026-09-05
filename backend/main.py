@@ -2,6 +2,7 @@ import os
 import json
 import random
 import io
+import re
 import numpy as np
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,15 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 load_dotenv()
 
 app = FastAPI()
+
+def clean_think_tags(text: str) -> str:
+    """Strip internal AI thinking tags (<think>...</think>) from output."""
+    if not text:
+        return ""
+    cleaned = re.sub(r'<think>[\s\S]*?</think>', '', text, flags=re.DOTALL)
+    cleaned = re.sub(r'<think>[\s\S]*', '', cleaned, flags=re.DOTALL)
+    return cleaned.strip()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -490,8 +500,10 @@ async def chat(request: ChatRequest):
         actions_taken = []
         process_timeline = None
         compliance_report = None
+        unsupported_image_flag = False
 
         # 0. Vision OCR processing if image_base64 is provided
+        extracted_text = ""
         if request.image_base64:
             clean_b64 = request.image_base64
             if "," in clean_b64:
@@ -499,7 +511,6 @@ async def chat(request: ChatRequest):
 
             img_data_url = request.image_base64 if request.image_base64.startswith("data:image") else f"data:image/png;base64,{clean_b64}"
             vision_models = ["qwen/qwen3.8-27b", "qwen/qwen3.6-27b"]
-            extracted_text = ""
             
             for v_model in vision_models:
                 try:
@@ -511,7 +522,7 @@ async def chat(request: ChatRequest):
                                 "content": [
                                     {
                                         "type": "text",
-                                        "text": "Extract all text, numbers, mineral/chemical composition (e.g. TDS, Chloride, Calcium, Magnesium, Bicarbonate, Sulfate, pH), BIS standard numbers (e.g. IS 10500), HUID codes, or brand/product names visible in this label image. List every extracted parameter with its exact value."
+                                        "text": "Analyze this image carefully.\nFirst check: Does this image contain a product label, packaging info, specification sheet, hallmark stamp, or technical document?\nIf it is a random, unrelated, or unclear photo (e.g. animal, car, landscape, blank/blurry photo with no product or regulatory label), respond ONLY with: UNSUPPORTED_IMAGE.\nOtherwise, extract all text, numbers, mineral/chemical composition (e.g. TDS, Chloride, Calcium, pH), BIS standard numbers (e.g. IS 10500, IS 16102), HUID codes, or brand/product names visible in this label image."
                                     },
                                     {
                                         "type": "image_url",
@@ -532,12 +543,28 @@ async def chat(request: ChatRequest):
                     print(f"Vision model '{v_model}' error: {v_err}")
                     continue
 
-            if extracted_text:
+            if "UNSUPPORTED_IMAGE" in extracted_text.upper():
+                unsupported_image_flag = True
+            elif extracted_text:
                 search_query = f"PRODUCT LABEL IMAGE DATA EXTRACTED:\n{extracted_text}\n\nUSER QUESTION: {request.query}"
                 print(f"Vision OCR Extracted Entities: {extracted_text}")
 
-        # 1. Embed the search query
-        embed_text = request.query if not request.image_base64 else f"Drinking water IS 10500 parameters TDS pH hardness chloride fluoride {request.query}"
+        # If image was unsupported, return polite guidance immediately
+        if unsupported_image_flag:
+            return {
+                "answer": "📷 I couldn't detect a valid BIS product label, hallmark stamp, or technical specification sheet in this image. Please upload a clear photo of a product label, packaging, HUID stamp, or technical spec document.",
+                "sources": [],
+                "actions_taken": [],
+                "process_timeline": None,
+                "compliance_report": None
+            }
+
+        # 1. Embed the search query dynamically without domain bias
+        if request.image_base64 and extracted_text:
+            embed_text = f"{extracted_text[:200]} {request.query}"
+        else:
+            embed_text = request.query
+
         query_embedding = list(embedding_model.embed([embed_text]))[0].tolist()
 
         sources = []
@@ -546,7 +573,7 @@ async def chat(request: ChatRequest):
         try:
             if supabase:
                 res = supabase.rpc('match_documents', {'query_embedding': query_embedding, 'match_count': 5}).execute()
-                sources = res.data
+                sources = res.data or []
             else:
                 raise Exception("Supabase client not initialized")
         except Exception as e:
@@ -562,6 +589,15 @@ async def chat(request: ChatRequest):
                 scored_chunks.sort(key=lambda x: x["similarity"], reverse=True)
                 sources = scored_chunks[:5]
 
+        # 2.1 Similarity Score Threshold Filtering (>= 0.35) to prevent cross-domain RAG contamination
+        SIMILARITY_THRESHOLD = 0.35
+        filtered_sources = []
+        for s in sources:
+            sim = s.get("similarity", 1.0)
+            if sim >= SIMILARITY_THRESHOLD:
+                filtered_sources.append(s)
+        sources = filtered_sources
+
         # 3. Context
         context_text = "\n\n---\n\n".join(
             f"Document: {s['metadata']['source']} (Page {s['metadata']['page']})\nContent: {s['content']}" 
@@ -572,12 +608,13 @@ async def chat(request: ChatRequest):
         system_prompt = (
             "You are an expert AI Assistant & Proactive Compliance Advisor for the Bureau of Indian Standards (BIS).\n"
             "Your goal is to explain Indian Standards to everyday consumers, MSMEs, and startups in crisp, professional, medium-sized, and visually appealing responses.\n\n"
-            "MANDATORY FORMATTING & TOOL RULES:\n"
-            "1. **Crisp & Medium-Sized Output**: Keep all text responses concise, well-spaced, and medium-sized. Use structured bullet points (•) and **bold keywords** for high readability. Avoid long walls of unstructured text.\n"
-            "2. **Proactive Compliance Gap Audit**: Whenever the user asks for a compliance audit, product spec sheet analysis, gap check, or wants to know what standards/QCO apply to their product, YOU MUST CALL THE `run_compliance_gap_analysis` TOOL to generate a full compliance report and downloadable PDF.\n"
-            "3. **Phase 8 Process Navigator**: Whenever the user asks for a procedure, steps, how-to guide, workflow, or application process, YOU MUST CALL THE `generate_process_timeline` TOOL to render an interactive step-by-step timeline navigator.\n"
-            "4. **Product Label Comparison Table**: When an image or label data is provided, include the 5-column comparison table comparing Product Label Values against BIS limits.\n"
-            "5. **Citations**: Always cite BIS codes and page numbers (e.g., [IS 10500, Page 1]).\n"
+            "MANDATORY FORMATTING & REGULATORY RULES:\n"
+            "1. **Direct & Current Regulatory Status**: Always state the CURRENT active regulatory requirement first in 1-2 crisp bullet points. Do NOT give long rambling historical chronologies or contradict yourself (e.g. stating old rules first and then contradicting them later). Be direct, clear, and consistent.\n"
+            "2. **Crisp & Medium-Sized Output**: Keep all text responses concise, well-spaced, and medium-sized. Use structured bullet points (•) and **bold keywords** for high readability. Avoid long walls of unstructured text.\n"
+            "3. **Proactive Compliance Gap Audit**: Whenever the user asks for a compliance audit, product spec sheet analysis, gap check, or wants to know what standards/QCO apply to their product, YOU MUST CALL THE `run_compliance_gap_analysis` TOOL to generate a full compliance report and downloadable PDF.\n"
+            "4. **Phase 8 Process Navigator**: Whenever the user asks for a procedure, steps, how-to guide, workflow, or application process, YOU MUST CALL THE `generate_process_timeline` TOOL to render an interactive step-by-step timeline navigator.\n"
+            "5. **Product Label Comparison Table**: When an image or label data is provided, include the 5-column comparison table comparing Product Label Values against BIS limits.\n"
+            "6. **Citations**: Always cite BIS codes and page numbers (e.g., [IS 10500, Page 1]).\n"
         )
 
         if request.simplify:
@@ -708,6 +745,9 @@ async def chat(request: ChatRequest):
         else:
             answer = response_message.content or "No response generated."
 
+        # Strip internal AI thinking tags (<think>...</think>)
+        clean_answer = clean_think_tags(answer)
+
         formatted_sources = [
             {
                 "document": s["metadata"]["source"], 
@@ -718,7 +758,7 @@ async def chat(request: ChatRequest):
         ] if sources else []
 
         return {
-            "answer": answer, 
+            "answer": clean_answer, 
             "sources": formatted_sources,
             "actions_taken": actions_taken,
             "process_timeline": process_timeline,
