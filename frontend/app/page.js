@@ -291,12 +291,32 @@ export default function ChatInterface() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimerRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const isAutoScrollEnabledRef = useRef(true);
+  const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    // If user is within 90px of bottom, keep auto-scroll active
+    const isNearBottom = distanceFromBottom < 90;
+    isAutoScrollEnabledRef.current = isNearBottom;
+    setShowScrollBottomBtn(distanceFromBottom > 220);
+  };
+
+  const scrollToBottom = useCallback((force = false) => {
+    if (!chatContainerRef.current) return;
+    if (force || isAutoScrollEnabledRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, []);
 
-  useEffect(() => { scrollToBottom(); }, [messages, isLoading, scrollToBottom]);
+  useEffect(() => {
+    if (isLoading) {
+      isAutoScrollEnabledRef.current = true;
+      scrollToBottom(true);
+    }
+  }, [isLoading, scrollToBottom]);
 
   useEffect(() => {
     return () => {
@@ -362,7 +382,7 @@ export default function ChatInterface() {
     }
 
     const totalLength = fullText.length;
-    // Adaptive chunking: short texts type softly, long reports type briskly like ChatGPT
+    // Adaptive chunking: short texts type softly, long reports stream briskly like ChatGPT
     const chunkSize = totalLength > 1500 ? 14 : totalLength > 600 ? 8 : totalLength > 200 ? 4 : 2;
     const intervalMs = 16; // 60 FPS smooth updates
 
@@ -382,6 +402,10 @@ export default function ChatInterface() {
         isTyping: true
       }
     ]);
+
+    if (isAutoScrollEnabledRef.current && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
 
     typingTimerRef.current = setInterval(() => {
       currentLength += chunkSize;
@@ -414,6 +438,11 @@ export default function ChatInterface() {
           return updated;
         });
       }
+
+      // ONLY auto-scroll if user is near bottom! If user scrolled up to read, DO NOT hijack scroll!
+      if (isAutoScrollEnabledRef.current && chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
     }, intervalMs);
   };
 
@@ -431,6 +460,8 @@ export default function ChatInterface() {
       typingTimerRef.current = null;
     }
 
+    isAutoScrollEnabledRef.current = true;
+
     setMessages((prev) => [
       ...prev.map((m) => ({ ...m, isTyping: false })),
       { role: "user", content: query || "Analyzed attached image for BIS Standards.", image: currentImage }
@@ -439,6 +470,11 @@ export default function ChatInterface() {
     setInput(""); setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setIsLoading(true);
+
+    setTimeout(() => {
+      scrollToBottom(true);
+    }, 50);
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -708,7 +744,7 @@ export default function ChatInterface() {
         <div className="flex-1 flex overflow-hidden">
 
           {/* Chat Area */}
-          <main className="flex-1 overflow-y-auto min-w-0">
+          <main ref={chatContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto min-w-0 relative">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 lg:px-8 py-8">
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="space-y-6 max-w-3xl lg:max-w-4xl w-full">
@@ -744,7 +780,7 @@ export default function ChatInterface() {
               <div className="w-full max-w-5xl lg:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
                 <AnimatePresence initial={false}>
                   {messages.map((msg, idx) => (
-                    <motion.div key={idx} variants={msgAnim} initial="hidden" animate="visible" layout className={`flex ${msg.role === "user" ? "justify-end" : "gap-3 justify-start w-full"}`}>
+                    <motion.div key={idx} variants={msgAnim} initial="hidden" animate="visible" className={`flex ${msg.role === "user" ? "justify-end" : "gap-3 justify-start w-full"}`}>
 
                       {/* Assistant avatar */}
                       {msg.role === "assistant" && (
@@ -938,6 +974,20 @@ export default function ChatInterface() {
                 {isLoading && <ChatSkeleton />}
                 <div ref={messagesEndRef} />
               </div>
+            )}
+
+            {/* Floating Jump to Latest Button */}
+            {showScrollBottomBtn && (
+              <button
+                onClick={() => {
+                  isAutoScrollEnabledRef.current = true;
+                  scrollToBottom(true);
+                  setShowScrollBottomBtn(false);
+                }}
+                className="sticky bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0055A4] hover:bg-[#003d7a] text-white text-xs font-semibold rounded-full shadow-lg transition-all cursor-pointer border border-white/20 animate-bounce"
+              >
+                <span>↓ Jump to latest</span>
+              </button>
             )}
           </main>
 
