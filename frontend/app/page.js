@@ -385,9 +385,10 @@ export default function ChatInterface() {
     }
 
     const totalLength = fullText.length;
-    // Adaptive chunking: short texts type softly, long reports stream briskly like ChatGPT
-    const chunkSize = totalLength > 1500 ? 14 : totalLength > 600 ? 8 : totalLength > 200 ? 4 : 2;
-    const intervalMs = 16; // 60 FPS smooth updates
+    // High-speed brisk streaming: completes full response in ~0.3 - 0.7 seconds
+    const intervalMs = 12;
+    const targetTicks = Math.min(30, Math.max(12, Math.floor(totalLength / 60)));
+    const chunkSize = Math.max(18, Math.ceil(totalLength / targetTicks));
 
     let currentLength = Math.min(chunkSize, totalLength);
 
