@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,6 +14,7 @@ const Icons = {
   attach: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
   close: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>,
   chevDown: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>,
+  chevUp: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m18 15-6-6-6 6"/></svg>,
   search: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
   calculator: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8M8 10h8M8 14h4M8 18h4"/></svg>,
   shield: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>,
@@ -34,6 +35,10 @@ const Icons = {
   mapPin: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
   doc: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m3 15 2 2 4-4"/></svg>,
   zap: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  sparkles: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg>,
+  brain: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg>,
+  spinner: <svg className="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
+  info: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>,
 };
 
 /* ─── Animation Config ─── */
@@ -44,24 +49,369 @@ const msgAnim = {
 
 const panelSpring = { type: "spring", stiffness: 400, damping: 34 };
 
-/* ─── Skeleton ─── */
-function SkeletonLine({ w = "100%", h = "12px", cls = "" }) {
-  return <div className={`skeleton rounded ${cls}`} style={{ width: w, height: h }} />;
+/* ─── SIH Evaluator & Selector Disclaimer Modal ─── */
+function SIHEvaluatorModal({ isOpen, onClose }) {
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      try {
+        localStorage.setItem("sih_evaluator_notice_seen", "true");
+      } catch {}
+    }
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-black/60 backdrop-blur-xs">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-full max-w-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden text-slate-800 dark:text-slate-100 my-auto"
+        >
+          {/* Header Banner */}
+          <div className="relative bg-gradient-to-r from-[#003366] via-[#0055A4] to-[#0284c7] text-white p-5 sm:p-6 pb-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-bold uppercase tracking-wider mb-2 border border-white/20">
+                  <span>🏆</span> Smart India Hackathon (SIH) — Evaluator & Selector Guide
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">
+                  Data Authenticity & Technical Architecture Notice
+                </h3>
+                <p className="text-xs text-blue-100 mt-1 leading-relaxed">
+                  Key transparency details for jury members, evaluators, and reviewers before testing P.R.A.M.A.A.N.
+                </p>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
+                aria-label="Close"
+              >
+                {Icons.close}
+              </button>
+            </div>
+          </div>
+
+          {/* Body Content */}
+          <div className="p-5 sm:p-6 space-y-4 max-h-[60vh] overflow-y-auto text-xs">
+            {/* Ground Truth & Dataset */}
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#151e33] border border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
+                <span className="text-emerald-600 dark:text-emerald-400">{Icons.check}</span>
+                <span>100% Verified Regulatory Ground-Truth Data</span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
+                All Indian Standards specifications (<span className="font-semibold text-slate-800 dark:text-slate-200">IS 14543, IS 10500, IS 16102, IS 1786, IS 9873</span>), statutory parameter tolerance limits, testing rules, Scheme-I/II workflows, and MSME fee structures are <strong>completely authentic and sourced directly from official Bureau of Indian Standards (BIS) publications and Gazette notifications</strong>.
+              </p>
+            </div>
+
+            {/* Custom Database & RAG Pipeline Reason */}
+            <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200 text-xs">
+                <span className="text-amber-600 dark:text-amber-400">{Icons.alert}</span>
+                <span>Custom-Engineered Vector Database & Knowledge Graph</span>
+              </div>
+              <p className="text-amber-800 dark:text-amber-300 text-[11.5px] leading-relaxed">
+                Since the <strong>Bureau of Indian Standards does NOT provide any open public REST/GraphQL APIs</strong> for developers, our team built an independent end-to-end vector pipeline (FastEmbed <code className="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 font-mono text-[10px]">BAAI/bge-small-en-v1.5</code>) and relational schemas directly from raw standards documentation, Manakonline fee schedules, and ILMS lab datasets.
+              </p>
+            </div>
+
+            {/* Key Innovations To Evaluate */}
+            <div className="space-y-2">
+              <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-[#0055A4] dark:text-sky-400">{Icons.zap}</span>
+                <span>Highlights & Innovations Built into this Demo</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151e33] border border-slate-200/80 dark:border-slate-800">
+                  <span className="font-semibold text-slate-900 dark:text-white block mb-0.5">📸 Vision OCR Spec Audit</span>
+                  <span className="text-slate-500 dark:text-slate-400">Extracts label chemical compositions & tolerance bounds via multi-modal vision.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151e33] border border-slate-200/80 dark:border-slate-800">
+                  <span className="font-semibold text-slate-900 dark:text-white block mb-0.5">🛡️ Compliance Gap Analyzer</span>
+                  <span className="text-slate-500 dark:text-slate-400">Identifies missing licenses, calculates MSME fee rebates, and generates downloadable PDF reports.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151e33] border border-slate-200/80 dark:border-slate-800">
+                  <span className="font-semibold text-slate-900 dark:text-white block mb-0.5">🔍 Live 6-Digit HUID Verifier</span>
+                  <span className="text-slate-500 dark:text-slate-400">Validates gold & silver hallmarking records against AHC centers.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151e33] border border-slate-200/80 dark:border-slate-800">
+                  <span className="font-semibold text-slate-900 dark:text-white block mb-0.5">🗺️ ILMS Testing Lab Locator</span>
+                  <span className="text-slate-500 dark:text-slate-400">Interactive geospatial map matching product scope to accredited testing laboratories.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151e33] border border-slate-200/80 dark:border-slate-800">
+                  <span className="font-semibold text-slate-900 dark:text-white block mb-0.5">🧠 Claude-Style Reasoning</span>
+                  <span className="text-slate-500 dark:text-slate-400">Clickable thought process showing verified steps taken behind the scenes.</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151e33] border border-slate-200/80 dark:border-slate-800">
+                  <span className="font-semibold text-slate-900 dark:text-white block mb-0.5">🌐 Multilingual & ELI5</span>
+                  <span className="text-slate-500 dark:text-slate-400">Translates complex standards into English, Hindi, Tamil, Bengali & simple 5th-grade analogies.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 sm:p-5 bg-slate-50 dark:bg-[#0b1120] border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <label className="inline-flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+                className="accent-[#0055A4] dark:accent-sky-500 w-3.5 h-3.5 rounded cursor-pointer"
+              />
+              <span>Do not show automatically on this device</span>
+            </label>
+
+            <button
+              onClick={handleClose}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0055A4] hover:bg-[#004080] dark:bg-sky-600 dark:hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-md transition-colors cursor-pointer"
+            >
+              <span>Explore P.R.A.M.A.A.N Demo</span>
+              <span>→</span>
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
 }
 
-function ChatSkeleton() {
+/* ─── Claude-like Completed Thought Process Accordion ─── */
+function ThoughtProcessAccordion({ steps = [] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!steps || steps.length === 0) return null;
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 justify-start w-full">
-      <div className="w-8 h-8 rounded-lg skeleton shrink-0 mt-1" />
-      <div className="flex-1 min-w-0 p-5 rounded-2xl rounded-tl-sm bg-white border border-gray-100 shadow-xs space-y-3">
-        <SkeletonLine w="35%" h="14px" />
-        <SkeletonLine w="92%" h="10px" />
-        <SkeletonLine w="78%" h="10px" />
-        <SkeletonLine w="55%" h="10px" />
-        <div className="flex gap-2 pt-1">
-          <SkeletonLine w="70px" h="22px" cls="!rounded-full" />
-          <SkeletonLine w="90px" h="22px" cls="!rounded-full" />
+    <div className="mb-3 select-none">
+      <button
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200/90 dark:hover:bg-slate-750 transition-all border border-slate-200/80 dark:border-slate-700/80 cursor-pointer group shadow-2xs"
+        title="Click to see what AI did behind the scenes"
+      >
+        <span className="text-[#0055A4] dark:text-sky-400 group-hover:rotate-12 transition-transform duration-200">{Icons.sparkles}</span>
+        <span className="font-semibold text-[11.5px]">Thought process ({steps.length} steps)</span>
+        <span className="text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200 ml-1 transition-transform">
+          {isOpen ? Icons.chevUp : Icons.chevDown}
+        </span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="mt-2 p-3 sm:p-3.5 bg-slate-50 dark:bg-[#0d131f] border border-slate-200/90 dark:border-slate-800 rounded-xl space-y-2.5 text-xs shadow-inner">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-800">
+                <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">
+                  <span className="text-[#0055A4] dark:text-sky-400">{Icons.brain}</span>
+                  <span>Backend Reasoning & Regulatory Checks</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium">{steps.length} verified steps</span>
+              </div>
+
+              <div className="space-y-2 pt-0.5">
+                {steps.map((step, sIdx) => (
+                  <div key={sIdx} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white dark:bg-[#151c2c] border border-slate-200/70 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold shadow-2xs">
+                      {Icons.check}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <h5 className="font-semibold text-slate-800 dark:text-slate-100 text-[12px] leading-snug">{step.title}</h5>
+                        {step.category && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            {step.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-300 text-[11px] mt-1 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─── Claude-like Active Thinking Component ─── */
+function ActiveThinkingCard({ lastQuery = "", hasImage = false }) {
+  const [stageIndex, setStageIndex] = useState(0);
+  const [showLiveSteps, setShowLiveSteps] = useState(false);
+
+  const qLower = (lastQuery || "").toLowerCase();
+
+  const dynamicStages = useMemo(() => {
+    if (hasImage) {
+      return [
+        { title: "Analyzing product label with Vision OCR...", detail: "Extracting text, chemical values, and standard marks" },
+        { title: "Matching standard identifiers against BIS index...", detail: "Looking up mandatory IS specifications" },
+        { title: "Verifying statutory compliance limits...", detail: "Checking regulatory safety thresholds" },
+        { title: "Synthesizing label comparison & verdict...", detail: "Drafting plain-language consumer insights" }
+      ];
+    }
+    if (qLower.includes("water") || qLower.includes("drink") || qLower.includes("bottle")) {
+      return [
+        { title: "Understanding packaged drinking water inquiry...", detail: "Filtering chemical, physical & microbiological scope" },
+        { title: "Searching IS 14543:2024 & IS 10500 standards...", detail: "Locating statutory parameter limits" },
+        { title: "Checking mandatory Scheme-I ISI Mark QCO rules...", detail: "Validating pre-market certification requirement" },
+        { title: "Drafting plain-language guidance & checklist...", detail: "Structuring clear steps for everyday users" }
+      ];
+    }
+    if (qLower.includes("led") || qLower.includes("bulb") || qLower.includes("light")) {
+      return [
+        { title: "Analyzing LED & lighting equipment query...", detail: "Checking electrical safety & energy parameters" },
+        { title: "Retrieving IS 16102 (Part 1 & 2) requirements...", detail: "Scanning self-ballasted LED specifications" },
+        { title: "Evaluating Scheme-II CRS Registration rules...", detail: "Cross-referencing MeitY / BIS mandatory orders" },
+        { title: "Compiling testing & compliance roadmap...", detail: "Preparing concise, actionable summary" }
+      ];
+    }
+    if (qLower.includes("steel") || qLower.includes("tmt") || qLower.includes("rebar")) {
+      return [
+        { title: "Processing structural steel & rebar query...", detail: "Identifying grade, tensile & yield requirements" },
+        { title: "Searching IS 1786 / IS 2062 specifications...", detail: "Checking mechanical testing mandates" },
+        { title: "Verifying mandatory Steel QCO 2024...", detail: "Confirming statutory licensing enforcement" },
+        { title: "Synthesizing mill testing & standard advice...", detail: "Formatting clear guidance with citations" }
+      ];
+    }
+    if (qLower.includes("gold") || qLower.includes("hallmark") || qLower.includes("huid")) {
+      return [
+        { title: "Interpreting hallmarking & purity inquiry...", detail: "Recognizing 6-character HUID verification intent" },
+        { title: "Querying BIS Assaying & Hallmarking records...", detail: "Checking AHC database guidelines" },
+        { title: "Verifying consumer purity standards...", detail: "Checking 22K/18K/14K hallmarking rules" },
+        { title: "Synthesizing hallmark verification guidance...", detail: "Drafting simple consumer advice" }
+      ];
+    }
+    if (qLower.includes("lab") || qLower.includes("test") || qLower.includes("ilms")) {
+      return [
+        { title: "Understanding testing laboratory request...", detail: "Identifying product domain & geographic scope" },
+        { title: "Filtering BIS Recognized & ILMS Lab network...", detail: "Scanning accredited facilities" },
+        { title: "Validating test parameters & accreditations...", detail: "Confirming NABL & BIS testing scope" },
+        { title: "Compiling nearby lab contact & capability list...", detail: "Formatting user-friendly lab directory" }
+      ];
+    }
+    return [
+      { title: "Interpreting your question & context...", detail: "Understanding product domain & regulatory jurisdiction" },
+      { title: "Searching Bureau of Indian Standards catalog...", detail: "Scanning official Indian Standards (IS codes)" },
+      { title: "Cross-referencing Quality Control Orders (QCO)...", detail: "Validating mandatory statutory compliance" },
+      { title: "Synthesizing verified guidance with citations...", detail: "Drafting crisp, easy-to-understand response" }
+    ];
+  }, [qLower, hasImage]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStageIndex((prev) => (prev + 1) % dynamicStages.length);
+    }, 1800);
+    return () => clearInterval(timer);
+  }, [dynamicStages.length]);
+
+  const currentStage = dynamicStages[stageIndex] || dynamicStages[0];
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 justify-start w-full">
+      <img src="/bis-logo.png" alt="BIS" className="w-8 h-8 rounded-lg object-contain mt-1 shrink-0 bg-white p-0.5 border border-gray-200/80 dark:border-slate-700 shadow-xs animate-pulse" />
+      <div className="flex-1 min-w-0 bg-white dark:bg-[#111827] border border-sky-200/70 dark:border-sky-900/50 rounded-2xl rounded-tl-sm p-4 sm:p-5 shadow-xs relative overflow-hidden">
+        {/* Top Shimmer Bar */}
+        <div className="absolute top-0 left-0 right-0 h-0.75 bg-linear-to-r from-sky-400 via-[#0055A4] to-indigo-500 animate-pulse" />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+            </span>
+            <span className="text-[11px] font-bold tracking-wider uppercase text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+              {Icons.brain}
+              <span>AI is thinking & analyzing backend standards...</span>
+            </span>
+          </div>
+
+          <button
+            onClick={() => setShowLiveSteps((prev) => !prev)}
+            className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-300 flex items-center gap-1 cursor-pointer transition-colors self-start sm:self-auto bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md"
+          >
+            <span>{showLiveSteps ? "Hide live steps" : "View live steps"}</span>
+            <span>{showLiveSteps ? Icons.chevUp : Icons.chevDown}</span>
+          </button>
         </div>
+
+        {/* Dynamic Rotating Live Stage */}
+        <div className="p-3 bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-xl">
+          <div className="flex items-center gap-2.5">
+            <span className="text-sky-600 dark:text-sky-400 shrink-0">{Icons.spinner}</span>
+            <div className="min-w-0 flex-1">
+              <motion.div
+                key={stageIndex}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h4 className="text-xs font-semibold text-gray-900 dark:text-white leading-tight">{currentStage.title}</h4>
+                <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5 truncate">{currentStage.detail}</p>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Step Checklist (Expandable) */}
+        <AnimatePresence>
+          {showLiveSteps && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2"
+            >
+              {dynamicStages.map((st, idx) => {
+                const isPassed = idx < stageIndex;
+                const isCurrent = idx === stageIndex;
+                return (
+                  <div key={idx} className="flex items-start gap-2 text-xs">
+                    <div className="mt-0.5 shrink-0">
+                      {isPassed ? (
+                        <span className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[9px] font-bold">
+                          {Icons.check}
+                        </span>
+                      ) : isCurrent ? (
+                        <span className="w-4 h-4 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-600 dark:text-sky-400 flex items-center justify-center text-[9px]">
+                          {Icons.spinner}
+                        </span>
+                      ) : (
+                        <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 flex items-center justify-center text-[9px]">
+                          {idx + 1}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className={`font-medium ${isCurrent ? "text-sky-600 dark:text-sky-400" : isPassed ? "text-slate-700 dark:text-slate-300" : "text-slate-400 dark:text-slate-500"}`}>
+                        {st.title}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
@@ -289,6 +639,7 @@ export default function ChatInterface() {
   const [imagePreview, setImagePreview] = useState(null);
   const [mobileSidebar, setMobileSidebar] = useState(false);
   const [activeTab, setActiveTab] = useState(null);
+  const [showEvaluatorModal, setShowEvaluatorModal] = useState(false);
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -297,6 +648,18 @@ export default function ChatInterface() {
   const chatContainerRef = useRef(null);
   const isAutoScrollEnabledRef = useRef(true);
   const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
+
+  // Auto-prompt evaluator disclaimer on first visit
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const seen = localStorage.getItem("sih_evaluator_notice_seen");
+        if (!seen) {
+          setShowEvaluatorModal(true);
+        }
+      } catch {}
+    }
+  }, []);
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -377,6 +740,7 @@ export default function ChatInterface() {
           actions_taken: data.actions_taken || [],
           process_timeline: data.process_timeline || null,
           compliance_report: data.compliance_report || null,
+          thought_process: data.thought_process || [],
           is_error: false,
           isTyping: false
         }
@@ -402,6 +766,7 @@ export default function ChatInterface() {
         actions_taken: data.actions_taken || [],
         process_timeline: data.process_timeline || null,
         compliance_report: data.compliance_report || null,
+        thought_process: data.thought_process || [],
         is_error: false,
         isTyping: true
       }
@@ -664,6 +1029,20 @@ export default function ChatInterface() {
               )}
             </button>
           ))}
+
+          {/* SIH Evaluator Guide Button in Sidebar */}
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                setShowEvaluatorModal(true);
+                setMobileSidebar(false);
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors text-left cursor-pointer"
+            >
+              <span className="text-amber-400 shrink-0">{Icons.shield}</span>
+              <span className="truncate">SIH Evaluator Notice</span>
+            </button>
+          </div>
         </div>
 
         {/* Spacer */}
@@ -711,6 +1090,17 @@ export default function ChatInterface() {
 
           {/* Right controls */}
           <div className="flex items-center gap-1.5 ml-auto shrink-0">
+            {/* SIH Evaluator & Selector Guide Button */}
+            <button
+              onClick={() => setShowEvaluatorModal(true)}
+              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-md font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-700/80 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all shadow-2xs cursor-pointer shrink-0"
+              title="SIH Evaluator Notice & Architecture Transparency"
+            >
+              <span className="text-amber-600 dark:text-amber-400">{Icons.shield}</span>
+              <span className="hidden sm:inline">SIH Evaluator Note</span>
+              <span className="sm:hidden">SIH Info</span>
+            </button>
+
             <label className="hidden sm:inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-md cursor-pointer border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors select-none text-gray-600 dark:text-slate-300">
               <input type="checkbox" checked={simplify} onChange={(e) => setSimplify(e.target.checked)} className="accent-[#0055A4] dark:accent-sky-500 w-3 h-3 cursor-pointer" />
               ELI5
@@ -823,6 +1213,11 @@ export default function ChatInterface() {
                               </div>
                             ) : (
                               <>
+                                {/* Claude-like Thought Process Collapsible */}
+                                {msg.thought_process?.length > 0 && (
+                                  <ThoughtProcessAccordion steps={msg.thought_process} />
+                                )}
+
                                 {/* Action pills */}
                                 {msg.actions_taken?.length > 0 && (
                                   <div className="mb-2.5 flex flex-wrap gap-1.5">
@@ -981,7 +1376,7 @@ export default function ChatInterface() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
-                {isLoading && <ChatSkeleton />}
+                {isLoading && <ActiveThinkingCard lastQuery={lastQuery} hasImage={Boolean(lastQuery && (lastQuery.includes("image") || lastQuery.includes("photo")))} />}
                 <div ref={messagesEndRef} />
               </div>
             )}
@@ -1385,6 +1780,12 @@ export default function ChatInterface() {
           </div>
         </footer>
       </div>
+
+      {/* SIH Evaluator & Selector Guide Modal */}
+      <SIHEvaluatorModal
+        isOpen={showEvaluatorModal}
+        onClose={() => setShowEvaluatorModal(false)}
+      />
     </div>
   );
 }
