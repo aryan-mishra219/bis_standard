@@ -61,11 +61,16 @@ def init_supabase():
 supabase: Client = init_supabase()
 
 
+class ConversationTurn(BaseModel):
+    role: str   # "user" or "assistant"
+    content: str
+
 class ChatRequest(BaseModel):
     query: str
     language: str = "English"
     simplify: bool = False
     image_base64: str | None = None
+    conversation_history: list[ConversationTurn] = []
 
 class ChatResponse(BaseModel):
     answer: str
@@ -942,8 +947,16 @@ async def chat(request: ChatRequest):
 
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Context:\n{context_text}\n\nUser Query: {search_query}"}
         ]
+
+        # Inject prior conversation turns (capped at last 10 turns = ~5 exchanges)
+        # Strip image content from history to avoid token bloat
+        history = request.conversation_history[-10:] if request.conversation_history else []
+        for turn in history:
+            messages.append({"role": turn.role, "content": turn.content})
+
+        # Current user message with RAG context
+        messages.append({"role": "user", "content": f"Context:\n{context_text}\n\nUser Query: {search_query}"})
 
         # 5. Call Groq with Function Calling / Tool Use
         # Note: Only models that support function/tool calling must be used here

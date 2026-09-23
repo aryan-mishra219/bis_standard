@@ -75,7 +75,7 @@ function SIHEvaluatorModal({ isOpen, onClose }) {
           className="relative w-full max-w-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden text-slate-800 dark:text-slate-100 my-auto"
         >
           {/* Header Banner */}
-          <div className="relative bg-gradient-to-r from-[#003366] via-[#0055A4] to-[#0284c7] text-white p-5 sm:p-6 pb-5">
+          <div className="relative bg-linear-to-r from-[#003366] via-[#0055A4] to-[#0284c7] text-white p-5 sm:p-6 pb-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-bold uppercase tracking-wider mb-2 border border-white/20">
@@ -845,9 +845,21 @@ export default function ChatInterface() {
     }, 50);
 
     try {
+      // Build conversation history from existing messages (last 10, skip typing/error/image-only messages)
+      const historyMessages = messages
+        .filter((m) => !m.isTyping && !m.is_error && (m.content || "").trim())
+        .slice(-10)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query || "What BIS standard or information is in this image?", language, simplify, image_base64: currentImage }),
+        body: JSON.stringify({
+          query: query || "What BIS standard or information is in this image?",
+          language,
+          simplify,
+          image_base64: currentImage,
+          conversation_history: historyMessages,
+        }),
       });
       const data = await res.json();
       setIsLoading(false);
